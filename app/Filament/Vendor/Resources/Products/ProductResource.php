@@ -116,6 +116,10 @@ class ProductResource extends Resource
                 Toggle::make('is_active')
                     ->label('معروض في المتجر')
                     ->default(true),
+
+                Toggle::make('is_featured')
+                    ->label('منتج مميز')
+                    ->helperText('يظهر في «مختارات المتاجر» بالصفحة الرئيسية.'),
             ]);
     }
 

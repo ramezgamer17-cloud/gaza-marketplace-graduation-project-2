@@ -9,6 +9,7 @@ use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/stores', [StoreController::class, 'index'])->name('stores.index');
 Route::get('/store/{vendorProfile:slug}', [StoreController::class, 'show'])->name('stores.show');
 
 Route::middleware('guest')->group(function () {

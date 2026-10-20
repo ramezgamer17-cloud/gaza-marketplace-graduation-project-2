@@ -5,9 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\VendorProfile;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class StoreController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $stores = VendorProfile::query()
+            ->active()
+            ->with(['user' => fn ($query) => $query->withCount('products')])
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->string('q').'%';
+
+                $query->where(function ($query) use ($term) {
+                    $query->where('store_name', 'like', $term)
+                        ->orWhere('store_type', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            })
+            ->orderByDesc('is_featured')
+            ->orderBy('store_name')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('stores.index', [
+            'stores' => $stores,
+            'query' => $request->string('q')->toString(),
+        ]);
+    }
+
     public function show(VendorProfile $vendorProfile): View
     {
         abort_unless($vendorProfile->is_active, 404);

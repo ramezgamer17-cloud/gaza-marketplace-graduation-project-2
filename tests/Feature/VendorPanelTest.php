@@ -163,6 +163,21 @@ class VendorPanelTest extends TestCase
             ->assertRedirect();
     }
 
+    public function test_vendor_panel_has_a_link_back_to_the_marketplace(): void
+    {
+        $vendor = $this->makeVendor();
+
+        $this->actingAs($vendor)
+            ->get('/vendor')
+            ->assertSuccessful()
+            ->assertSee('السوق')
+            ->assertSee('العودة إلى السوق')
+            ->assertSee('سلة الشراء')
+            ->assertSee('طلباتي كزبون')
+            ->assertSee(route('home'), false)
+            ->assertSee(route('stores.index'), false);
+    }
+
     public function test_vendor_store_page_shows_logo_and_cover_fields(): void
     {
         $vendor = $this->makeVendor();

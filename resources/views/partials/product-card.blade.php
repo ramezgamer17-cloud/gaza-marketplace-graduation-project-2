@@ -3,18 +3,30 @@
     $store = $product->vendor?->vendorProfile;
     $hasDiscount = $product->compare_at_price && $product->compare_at_price > $product->price;
     $initial = mb_substr($product->name, 0, 1);
+    $imageUrl = $product->thumbnail ? Storage::disk('public')->url($product->thumbnail) : '';
 @endphp
 
 <article class="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
-    <a href="#" class="block">
-        <div class="relative aspect-square overflow-hidden bg-gradient-to-br from-primary-50 to-secondary-50">
-            @if ($product->thumbnail)
-                <img src="{{ Storage::disk('public')->url($product->thumbnail) }}" alt="{{ $product->name }}"
+
+    {{-- الضغط على المنتج يفتح نافذة المعاينة --}}
+    <button type="button" class="block w-full text-start"
+            data-product
+            data-name="{{ $product->name }}"
+            data-price="{{ number_format((float) $product->price, 2) }}"
+            data-compare="{{ $hasDiscount ? number_format((float) $product->compare_at_price, 2) : '' }}"
+            data-image="{{ $imageUrl }}"
+            data-description="{{ $product->description }}"
+            data-store="{{ $store?->store_name }}"
+            data-store-url="{{ $store ? route('stores.show', $store) : '' }}"
+            data-add-url="{{ route('cart.add', $product) }}"
+            data-authed="{{ auth()->check() ? '1' : '0' }}">
+
+        <span class="relative block aspect-square overflow-hidden bg-gradient-to-br from-primary-50 to-secondary-50">
+            @if ($imageUrl)
+                <img src="{{ $imageUrl }}" alt="{{ $product->name }}"
                      class="size-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
             @else
-                <div class="grid size-full place-items-center text-4xl font-extrabold text-primary/30">
-                    {{ $initial }}
-                </div>
+                <span class="grid size-full place-items-center text-4xl font-extrabold text-primary/30">{{ $initial }}</span>
             @endif
 
             @if ($hasDiscount)
@@ -23,31 +35,35 @@
                 </span>
             @endif
 
+            @if ($product->is_featured)
+                <span class="absolute end-2 top-2 rounded-lg bg-primary/90 px-2 py-1 text-[10px] font-bold text-white">مميز</span>
+            @endif
+
             @if ($product->stock === 0)
                 <span class="absolute inset-0 grid place-items-center bg-white/70 text-sm font-bold text-gray-700">نفدت الكمية</span>
             @endif
-        </div>
-    </a>
+        </span>
 
-    <div class="space-y-1.5 p-3">
-        <a href="#" class="line-clamp-1 text-sm font-semibold text-ink hover:text-primary">{{ $product->name }}</a>
+        <span class="block space-y-1.5 p-3">
+            <span class="line-clamp-1 block text-sm font-semibold text-ink group-hover:text-primary">{{ $product->name }}</span>
 
-        @if ($store)
-            <a href="{{ route('stores.show', $store) }}" class="line-clamp-1 block text-[11px] text-gray-500 hover:text-primary">
-                {{ $store->store_name }}
-            </a>
-        @endif
-
-        <div class="flex items-baseline gap-1.5 pt-0.5">
-            <span class="text-sm font-extrabold text-primary">{{ number_format((float) $product->price, 2) }}</span>
-            <span class="text-[11px] text-gray-500">شيكل</span>
-            @if ($hasDiscount)
-                <span class="text-[11px] text-gray-400 line-through">{{ number_format((float) $product->compare_at_price, 2) }}</span>
+            @if ($store)
+                <span class="line-clamp-1 block text-[11px] text-gray-500">{{ $store->store_name }}</span>
             @endif
-        </div>
 
+            <span class="flex items-baseline gap-1.5 pt-0.5">
+                <span class="text-sm font-extrabold text-primary">{{ number_format((float) $product->price, 2) }}</span>
+                <span class="text-[11px] text-gray-500">شيكل</span>
+                @if ($hasDiscount)
+                    <span class="text-[11px] text-gray-400 line-through">{{ number_format((float) $product->compare_at_price, 2) }}</span>
+                @endif
+            </span>
+        </span>
+    </button>
+
+    <div class="px-3 pb-3">
         @auth
-            <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-1">
+            <form method="POST" action="{{ route('cart.add', $product) }}">
                 @csrf
                 <button type="submit"
                         class="w-full rounded-xl bg-primary/10 py-2 text-xs font-bold text-primary transition hover:bg-primary hover:text-white">
@@ -56,7 +72,7 @@
             </form>
         @else
             <a href="{{ route('login') }}"
-               class="mt-1 block w-full rounded-xl bg-primary/10 py-2 text-center text-xs font-bold text-primary transition hover:bg-primary hover:text-white">
+               class="block w-full rounded-xl bg-primary/10 py-2 text-center text-xs font-bold text-primary transition hover:bg-primary hover:text-white">
                 أضف إلى السلة
             </a>
         @endauth

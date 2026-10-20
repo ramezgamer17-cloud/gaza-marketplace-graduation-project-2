@@ -2,12 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Navigation\NavigationItem;
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -36,6 +38,34 @@ class VendorPanelProvider extends PanelProvider
             ->navigationGroups([
                 'متجري',
                 'الطلبات',
+            ])
+            ->navigationItems([
+                NavigationItem::make('السوق')
+                    ->url(fn (): string => route('home'))
+                    ->icon('heroicon-o-shopping-bag')
+                    ->sort(-20),
+                NavigationItem::make('المتاجر')
+                    ->url(fn (): string => route('stores.index'))
+                    ->icon('heroicon-o-building-storefront')
+                    ->sort(-19),
+            ])
+            ->userMenuItems([
+                'market' => Action::make('market')
+                    ->label('العودة إلى السوق')
+                    ->url(fn (): string => route('home'))
+                    ->icon('heroicon-o-arrow-left-on-rectangle'),
+                'stores' => Action::make('stores')
+                    ->label('تصفّح المتاجر')
+                    ->url(fn (): string => route('stores.index'))
+                    ->icon('heroicon-o-building-storefront'),
+                'cart' => Action::make('cart')
+                    ->label('سلة الشراء')
+                    ->url(fn (): string => route('cart.index'))
+                    ->icon('heroicon-o-shopping-cart'),
+                'orders' => Action::make('orders')
+                    ->label('طلباتي كزبون')
+                    ->url(fn (): string => route('orders.index'))
+                    ->icon('heroicon-o-clipboard-document-list'),
             ])
             ->discoverResources(in: app_path('Filament/Vendor/Resources'), for: 'App\Filament\Vendor\Resources')
             ->discoverPages(in: app_path('Filament/Vendor/Pages'), for: 'App\Filament\Vendor\Pages')

@@ -16,11 +16,11 @@
             </p>
 
             <div class="mt-5 flex flex-wrap gap-2">
-                <a href="#stores" class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-primary transition hover:bg-white/90">
+                <a href="{{ route('stores.index') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-primary transition hover:bg-white/90">
                     تصفّح المتاجر
                 </a>
-                <a href="#products" class="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
-                    أحدث المنتجات
+                <a href="#showcase" class="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
+                    مختارات المتاجر
                 </a>
             </div>
         </div>
@@ -29,9 +29,7 @@
     {{-- التصنيفات --}}
     @if ($categories->isNotEmpty())
         <section class="mb-9">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-extrabold">تصفّح حسب التصنيف</h2>
-            </div>
+            <h2 class="mb-3 text-lg font-extrabold">تصفّح حسب التصنيف</h2>
 
             <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
                 @foreach ($categories as $category)
@@ -81,12 +79,10 @@
         </section>
     @endif
 
-    {{-- منتجات مميزة --}}
+    {{-- عروض عامة --}}
     @if ($featuredProducts->isNotEmpty())
         <section class="mb-9">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-extrabold">عروض ومنتجات مميزة</h2>
-            </div>
+            <h2 class="mb-3 text-lg font-extrabold">عروض ومنتجات مميزة</h2>
 
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                 @foreach ($featuredProducts as $product)
@@ -96,16 +92,42 @@
         </section>
     @endif
 
-    {{-- أحدث المنتجات --}}
-    @if ($newProducts->isNotEmpty())
-        <section id="products" class="scroll-mt-20">
+    {{-- مختارات كل متجر --}}
+    @if ($storeSections->isNotEmpty())
+        <section id="showcase" class="scroll-mt-20">
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-extrabold">وصل حديثًا</h2>
+                <h2 class="text-lg font-extrabold">مختارات المتاجر</h2>
+                <span class="text-xs text-gray-400">كل متجر يختار منتجاته بنفسه</span>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                @foreach ($newProducts as $product)
-                    @include('partials.product-card', ['product' => $product])
+            <div class="space-y-4">
+                @foreach ($storeSections as $store)
+                    <div class="overflow-hidden rounded-3xl border border-gray-100 bg-white">
+                        <header class="flex items-center justify-between gap-3 border-b border-gray-50 px-4 py-3">
+                            <a href="{{ route('stores.show', $store) }}" class="group flex min-w-0 items-center gap-3">
+                                <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary/10 text-base font-extrabold text-primary"
+                                      @if ($store->logo) style="background-image:url('{{ Storage::disk('public')->url($store->logo) }}');background-size:cover;background-position:center" @endif>
+                                    @unless ($store->logo){{ mb_substr($store->store_name, 0, 1) }}@endunless
+                                </span>
+
+                                <span class="min-w-0">
+                                    <span class="block truncate text-sm font-extrabold text-ink group-hover:text-primary">{{ $store->store_name }}</span>
+                                    <span class="block text-[11px] text-gray-500">{{ $store->showcaseProducts->count() }} منتج مميز</span>
+                                </span>
+                            </a>
+
+                            <a href="{{ route('stores.show', $store) }}"
+                               class="shrink-0 rounded-xl border border-gray-200 px-3 py-1.5 text-[11px] font-bold text-gray-600 transition hover:border-primary hover:text-primary">
+                                زيارة المتجر
+                            </a>
+                        </header>
+
+                        <div class="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
+                            @foreach ($store->showcaseProducts as $product)
+                                @include('partials.product-card', ['product' => $product])
+                            @endforeach
+                        </div>
+                    </div>
                 @endforeach
             </div>
         </section>
