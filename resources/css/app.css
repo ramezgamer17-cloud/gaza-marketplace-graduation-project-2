@@ -6,6 +6,52 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    /* الخط العربي الأساسي */
+    --font-sans: 'Cairo', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* الهوية اللونية للمشروع */
+    --color-primary: #10b981;
+    --color-primary-50: #ecfdf5;
+    --color-primary-100: #d1fae5;
+    --color-primary-200: #a7f3d0;
+    --color-primary-300: #6ee7b7;
+    --color-primary-400: #34d399;
+    --color-primary-500: #10b981;
+    --color-primary-600: #059669;
+    --color-primary-700: #047857;
+    --color-primary-800: #065f46;
+    --color-primary-900: #064e3b;
+
+    --color-secondary: #0ea5e9;
+    --color-secondary-50: #f0f9ff;
+    --color-secondary-100: #e0f2fe;
+    --color-secondary-200: #bae6fd;
+    --color-secondary-300: #7dd3fc;
+    --color-secondary-400: #38bdf8;
+    --color-secondary-500: #0ea5e9;
+    --color-secondary-600: #0284c7;
+    --color-secondary-700: #0369a1;
+
+    /* أسطح ونصوص الوضعين */
+    --color-surface: #ffffff;
+    --color-surface-dark: #111827;
+    --color-ink: #1f2937;
+    --color-ink-dark: #f9fafb;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-sans);
+    }
+
+    body {
+        @apply bg-surface text-ink antialiased;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        body {
+            @apply bg-surface-dark text-ink-dark;
+        }
+    }
 }

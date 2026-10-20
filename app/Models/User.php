@@ -4,14 +4,19 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +26,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
+        'avatar',
+        'cover',
+        'address',
+        'is_active',
         'password',
     ];
 
@@ -44,6 +54,82 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * من يستطيع الدخول إلى كل لوحة تحكم.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => $this->hasRole('admin'),
+            'vendor' => $this->hasRole('vendor'),
+            'delivery' => $this->hasRole('delivery'),
+            default => false,
+        };
+    }
+
+    /* ---------------------------------------------------------------
+     | العلاقات
+     * -------------------------------------------------------------- */
+
+    public function vendorProfile(): HasOne
+    {
+        return $this->hasOne(VendorProfile::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function sections(): HasMany
+    {
+        return $this->hasMany(VendorSection::class);
+    }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
+    }
+
+    /** الطلبات التي اشتراها هذا المستخدم كزبون. */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /** الطلبات الواردة إلى متجر هذا البائع. */
+    public function vendorOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'vendor_id');
+    }
+
+    /** الطلبات المسندة إلى هذا الموظف للتوصيل. */
+    public function deliveryOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'delivery_user_id');
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class, 'vendor_id');
+    }
+
+    public function customerConversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'customer_id');
+    }
+
+    public function vendorConversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'vendor_id');
     }
 }

@@ -13,8 +13,14 @@
 /.zed
 /auth.json
 /node_modules
+/.npm-cache
+/.psysh
+/.preview
 /public/build
+/public/css/filament
+/public/fonts/filament
 /public/hot
+/public/js/filament
 /public/storage
 /storage/*.key
 /storage/pail

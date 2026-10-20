@@ -41,7 +41,8 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // رابط نسبي حتى يعمل على أي منفذ/نطاق دون الاعتماد على APP_URL
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
