@@ -23,6 +23,16 @@ class RoleHome
             return '/vendor';
         }
 
+        if ($user->hasRole('delivery_manager')) {
+            $profile = $user->deliveryProfile;
+
+            if (! $profile?->is_active || ! $profile?->company?->is_active) {
+                return '/pending';
+            }
+
+            return '/company';
+        }
+
         if ($user->hasRole('delivery')) {
             $profile = $user->deliveryProfile;
 
@@ -30,7 +40,7 @@ class RoleHome
                 return '/pending';
             }
 
-            return $profile->type === 'manager' ? '/company' : '/delivery';
+            return '/delivery';
         }
 
         return '/';

@@ -43,6 +43,18 @@ class DeliveryCompanyResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = DeliveryCompany::query()->where('is_active', false)->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -81,11 +93,12 @@ class DeliveryCompanyResource extends Resource
                 Select::make('manager_id')
                     ->label('مدير الشركة')
                     ->options(fn () => User::query()
-                        ->whereHas('deliveryProfile', fn ($query) => $query->where('type', 'manager'))
+                        ->whereHas('roles', fn ($query) => $query->where('name', 'delivery_manager'))
                         ->orderBy('name')
                         ->pluck('name', 'id'))
                     ->searchable()
-                    ->placeholder('بدون مدير'),
+                    ->placeholder('بدون مدير')
+                    ->helperText('أنشئ المستخدم بدور «مدير شركة توصيل» من شاشة المستخدمين أولًا.'),
 
                 Toggle::make('is_active')
                     ->label('شركة مفعّلة')
@@ -152,6 +165,13 @@ class DeliveryCompanyResource extends Resource
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\DeliveryCompanies\RelationManagers\DriversRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

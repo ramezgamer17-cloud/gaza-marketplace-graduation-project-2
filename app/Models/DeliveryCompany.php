@@ -28,6 +28,42 @@ class DeliveryCompany extends Model
 
     protected static function booted(): void
     {
+        static::saved(function (DeliveryCompany $company) {
+            if (! $company->manager_id) {
+                return;
+            }
+
+            $manager = User::find($company->manager_id);
+
+            if (! $manager) {
+                return;
+            }
+
+            $role = \Spatie\Permission\Models\Role::firstOrCreate([
+                'name' => 'delivery_manager',
+                'guard_name' => 'web',
+            ]);
+
+            if (! $manager->hasRole($role)) {
+                $manager->assignRole($role);
+            }
+
+            $profile = DeliveryProfile::firstOrCreate(
+                ['user_id' => $manager->id],
+                [
+                    'company_id' => $company->id,
+                    'type' => DeliveryProfile::TYPE_MANAGER,
+                    'is_active' => (bool) $manager->is_active,
+                ]
+            );
+
+            if (! $profile->wasRecentlyCreated) {
+                $profile->update([
+                    'company_id' => $company->id,
+                    'type' => DeliveryProfile::TYPE_MANAGER,
+                ]);
+            }
+        });
         static::creating(function (DeliveryCompany $company) {
             $company->slug ??= Slug::make($company->name);
         });

@@ -37,6 +37,7 @@ class VendorPanelProvider extends PanelProvider
             ->id('vendor')
             ->path('vendor')
             ->login()
+            ->databaseNotifications()
             ->profile()
             ->brandName('سوق غزة — لوحة البائع')
             ->font(

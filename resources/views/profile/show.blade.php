@@ -108,7 +108,8 @@
         </section>
     @endif
 
-    {{-- إكمال بيانات الحساب (بائع / توصيل) --}}
+    {{-- إكمال بيانات الحساب (بائع / توصيل) — لا يظهر للأدمن --}}
+    @unless ($user->hasRole('admin'))
     <section class="mb-4 rounded-3xl border border-gray-100 bg-white p-5">
         <h2 class="text-sm font-extrabold">إكمال بيانات الحساب</h2>
         <p class="mt-1 text-[11px] text-gray-500">
@@ -248,6 +249,7 @@
             </details>
         </div>
     </section>
+    @endunless
 
     {{-- تعديل البيانات --}}
     <section class="rounded-3xl border border-gray-100 bg-white p-5">

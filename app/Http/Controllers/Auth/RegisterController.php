@@ -79,8 +79,14 @@ class RegisterController extends \Illuminate\Routing\Controller
                 'is_active' => true,
             ]);
 
-            Role::firstOrCreate(['name' => $type, 'guard_name' => 'web']);
-            $user->assignRole($type);
+            $roleName = $type;
+
+            if ($type === 'delivery' && ($validated['delivery_type'] ?? null) === 'manager') {
+                $roleName = 'delivery_manager';
+            }
+
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $user->assignRole($roleName);
 
             if ($type === 'vendor') {
                 VendorProfile::create([
@@ -111,14 +117,16 @@ class RegisterController extends \Illuminate\Routing\Controller
                     $companyId = $company->id;
                 }
 
-                DeliveryProfile::create([
-                    'user_id' => $user->id,
-                    'company_id' => $companyId,
-                    'type' => $validated['delivery_type'],
-                    'zone_id' => $validated['zone_id'],
-                    'address' => $validated['address'] ?? null,
-                    'is_active' => false,
-                ]);
+                DeliveryProfile::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'company_id' => $companyId,
+                        'type' => $validated['delivery_type'],
+                        'zone_id' => $validated['zone_id'],
+                        'address' => $validated['address'] ?? null,
+                        'is_active' => false,
+                    ]
+                );
             }
 
             return $user;

@@ -129,8 +129,8 @@ class AdminPanelTest extends TestCase
         foreach ([
             '/admin/delivery-companies',
             '/admin/delivery-companies/create',
-            '/admin/delivery-profiles',
-            '/admin/delivery-profiles/create',
+            '/admin/delivery-drivers',
+            '/admin/delivery-drivers/create',
         ] as $url) {
             $this->actingAs($admin)->get($url)->assertSuccessful();
         }
@@ -151,10 +151,21 @@ class AdminPanelTest extends TestCase
         ]);
 
         \Livewire\Livewire::actingAs($admin)
-            ->test(\App\Filament\Resources\DeliveryProfiles\Pages\ListDeliveryProfiles::class)
+            ->test(\App\Filament\Resources\DeliveryDrivers\Pages\ListDeliveryDrivers::class)
             ->callAction(\Filament\Actions\Testing\TestAction::make('approve')->table($profile));
 
         $this->assertTrue($profile->fresh()->is_active);
+    }
+
+    public function test_admin_edit_page_has_a_back_button(): void
+    {
+        $admin = $this->makeAdmin();
+        $user = \App\Models\User::factory()->create();
+
+        $this->actingAs($admin)
+            ->get('/admin/users/'.$user->id.'/edit')
+            ->assertSuccessful()
+            ->assertSee('رجوع');
     }
 
     public function test_dashboard_widgets_render_without_errors(): void

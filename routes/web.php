@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
@@ -45,10 +46,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
 
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/checkout/fees', [CheckoutController::class, 'fees'])->name('checkout.fees');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/orders/{order}/pay', [PaymentController::class, 'sendCode'])->name('payment.send');
+    Route::get('/orders/{order}/pay/verify', [PaymentController::class, 'verifyForm'])->name('payment.verify');
+    Route::post('/orders/{order}/pay/verify', [PaymentController::class, 'verify'])->name('payment.verify.submit');
 
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{product}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');

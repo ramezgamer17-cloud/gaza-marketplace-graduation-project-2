@@ -25,6 +25,7 @@ class CompanyPanelProvider extends PanelProvider
             ->id('company')
             ->path('company')
             ->login()
+            ->databaseNotifications()
             ->brandName('سوق غزة — لوحة الشركة')
             ->font('Cairo', url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap')
             ->colors(['primary' => Color::Emerald])

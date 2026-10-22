@@ -16,7 +16,7 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['admin', 'vendor', 'customer', 'delivery'] as $role) {
+        foreach (['admin', 'vendor', 'customer', 'delivery', 'delivery_manager'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
@@ -88,6 +88,25 @@ class DemoDataSeeder extends Seeder
                 ['user_id' => $vendor->id],
                 $data['store'] + ['description' => 'متجر تجريبي في سوق غزة.', 'is_active' => true]
             );
+
+            // منطقة المتجر (أساس حساب سعر التوصيل)
+            $zoneName = match ($data['store']['store_name']) {
+                'شاورما الرمال' => 'الشمال',
+                'سوبرماركت النصر' => 'الوسطى',
+                'خضار أبو أحمد' => 'الجنوب',
+                default => 'الشمال',
+            };
+
+            if (! $profile->zone_id) {
+                $zone = \App\Models\DeliveryZone::query()
+                    ->whereNull('parent_id')
+                    ->where('name', $zoneName)
+                    ->first();
+
+                if ($zone) {
+                    $profile->update(['zone_id' => $zone->id]);
+                }
+            }
 
             $sections = [];
             foreach ($data['sections'] as $index => $sectionName) {

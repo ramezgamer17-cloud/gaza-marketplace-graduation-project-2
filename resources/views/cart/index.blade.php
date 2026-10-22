@@ -86,7 +86,7 @@
                     </ul>
 
                     <footer class="flex items-center justify-between border-t border-gray-50 px-4 py-2.5 text-[11px] text-gray-500">
-                        <span>التوصيل تُحدده شركة التوصيل</span>
+                        <span>تُحسب حسب منطقتك عند إتمام الطلب</span>
                         <span>إجمالي المتجر: <strong class="text-ink">{{ number_format($group->total, 2) }} شيكل</strong></span>
                     </footer>
                 </section>

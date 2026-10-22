@@ -39,6 +39,21 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    /**
+     * أسماء الأدوار بالعربية.
+     */
+    public static function roleLabel(string $name): string
+    {
+        return match ($name) {
+            'admin' => 'أدمن',
+            'vendor' => 'بائع',
+            'customer' => 'زبون',
+            'delivery' => 'مندوب توصيل',
+            'delivery_manager' => 'مدير شركة توصيل',
+            default => $name,
+        };
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -76,6 +91,7 @@ class UserResource extends Resource
                 Select::make('roles')
                     ->label('الأدوار')
                     ->relationship('roles', 'name')
+                    ->getOptionLabelFromRecordUsing(fn (\Spatie\Permission\Models\Role $record) => static::roleLabel($record->name))
                     ->multiple()
                     ->preload()
                     ->searchable(),
@@ -112,6 +128,7 @@ class UserResource extends Resource
                 TextColumn::make('roles.name')
                     ->label('الأدوار')
                     ->badge()
+                    ->formatStateUsing(fn (string $state) => static::roleLabel($state))
                     ->color('success')
                     ->placeholder('—'),
 
