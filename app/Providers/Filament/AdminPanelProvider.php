@@ -37,6 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'الطلبات',
+                'التوصيل',
                 'الكتالوج',
                 'المتاجر',
                 'المستخدمون',

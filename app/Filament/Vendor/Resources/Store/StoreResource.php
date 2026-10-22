@@ -5,13 +5,16 @@ namespace App\Filament\Vendor\Resources\Store;
 use App\Filament\Vendor\Resources\Store\Pages\EditStore;
 use App\Filament\Vendor\Resources\Store\Pages\ListStores;
 use App\Models\VendorProfile;
+use App\Models\DeliveryZone;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
@@ -101,9 +104,27 @@ class StoreResource extends Resource
                     ->tel()
                     ->maxLength(20),
 
+                Select::make('zone_id')
+                    ->label('المنطقة')
+                    ->options(fn () => DeliveryZone::query()->regions()->pluck('name', 'id'))
+                    ->searchable()
+                    ->live()
+                    ->required(),
+
+                Select::make('area_id')
+                    ->label('الحي / المدينة')
+                    ->options(fn (Get $get) => DeliveryZone::query()
+                        ->where('parent_id', $get('zone_id'))
+                        ->orderBy('sort_order')
+                        ->pluck('name', 'id'))
+                    ->searchable()
+                    ->required(),
+
                 TextInput::make('address')
-                    ->label('العنوان')
-                    ->maxLength(255),
+                    ->label('باقي العنوان')
+                    ->maxLength(255)
+                    ->required()
+                    ->columnSpanFull(),
 
                 TextInput::make('delivery_time')
                     ->label('مدة تجهيز الطلب (دقيقة)')

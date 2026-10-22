@@ -16,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -64,10 +65,21 @@ class OrderResource extends Resource
                     ->options(Order::statusLabels())
                     ->required(),
 
+                Select::make('delivery_company_id')
+                    ->label('شركة التوصيل')
+                    ->relationship('deliveryCompany', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->placeholder('بدون شركة'),
+
                 Select::make('delivery_user_id')
                     ->label('موظف التوصيل')
-                    ->options(fn () => User::query()
-                        ->whereHas('roles', fn ($query) => $query->where('name', 'delivery'))
+                    ->options(fn (Get $get) => User::query()
+                        ->whereHas('deliveryProfile', function ($query) use ($get) {
+                            $query->where('type', 'driver')
+                                ->when($get('delivery_company_id'), fn ($q, $companyId) => $q->where('company_id', $companyId));
+                        })
                         ->orderBy('name')
                         ->pluck('name', 'id'))
                     ->searchable()
@@ -147,6 +159,11 @@ class OrderResource extends Resource
                         'unpaid' => 'warning',
                         default => 'danger',
                     }),
+
+                TextColumn::make('deliveryCompany.name')
+                    ->label('شركة التوصيل')
+                    ->placeholder('—')
+                    ->toggleable(),
 
                 TextColumn::make('deliveryUser.name')
                     ->label('المندوب')

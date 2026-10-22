@@ -12,6 +12,24 @@ class VendorProfile extends Model
 {
     use HasFactory;
 
+    /**
+     * أنواع المتاجر المتاحة على المنصة.
+     */
+    public static function storeTypes(): array
+    {
+        return [
+            'restaurant' => 'مطعم',
+            'supermarket' => 'سوبرماركت',
+            'vegetables' => 'خضار وفواكه',
+            'electronics' => 'أدوات كهربائية',
+            'plumbing' => 'سباكة',
+            'clothing' => 'ملابس',
+            'pharmacy' => 'صيدلية',
+            'bakery' => 'مخبز',
+            'other' => 'أخرى',
+        ];
+    }
+
     protected $fillable = [
         'user_id',
         'store_name',
@@ -23,6 +41,8 @@ class VendorProfile extends Model
         'store_type',
         'phone',
         'address',
+        'zone_id',
+        'area_id',
         'latitude',
         'longitude',
         'delivery_fee',
@@ -52,6 +72,26 @@ class VendorProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryZone::class, 'zone_id');
+    }
+
+    public function area(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryZone::class, 'area_id');
+    }
+
+    /**
+     * العنوان المعروض للزبون: المنطقة + الحي + التفاصيل.
+     */
+    public function getFullAddressAttribute(): string
+    {
+        return collect([$this->zone?->name, $this->area?->name, $this->address])
+            ->filter()
+            ->implode(' - ');
     }
 
     public function scopeActive(Builder $query): Builder

@@ -18,8 +18,21 @@
     {{-- الشريط العلوي --}}
     <header class="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur">
         <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
-            <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
-                <span class="grid size-9 place-items-center rounded-xl bg-primary text-sm font-extrabold text-white">س</span>
+            <button type="button" data-menu-toggle aria-label="القائمة"
+                    class="grid size-9 shrink-0 place-items-center rounded-xl text-gray-600 transition hover:bg-gray-50 hover:text-primary">
+                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                </svg>
+            </button>
+
+            <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="flex shrink-0 items-center gap-2">
+                <span class="grid size-9 place-items-center overflow-hidden rounded-full bg-primary text-sm font-extrabold text-white">
+                    @if (auth()->check() && auth()->user()->avatar)
+                        <img src="{{ Storage::disk('public')->url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="size-full object-cover">
+                    @else
+                        س
+                    @endif
+                </span>
                 <span class="hidden text-lg font-extrabold text-ink sm:block">سوق غزة</span>
             </a>
 
@@ -32,7 +45,7 @@
                 </svg>
             </form>
 
-            <a href="{{ route('cart.index') }}" class="relative grid size-10 shrink-0 place-items-center rounded-xl border border-gray-200 text-gray-600 transition hover:border-primary hover:text-primary">
+            <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="relative grid size-10 shrink-0 place-items-center rounded-xl border border-gray-200 text-gray-600 transition hover:border-primary hover:text-primary">
                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
                 </svg>
@@ -60,9 +73,14 @@
                     </form>
                 </div>
             @else
-                <a href="{{ route('login') }}" class="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600">
-                    دخول
-                </a>
+                <div class="flex shrink-0 items-center gap-2">
+                    <a href="{{ route('register') }}" class="hidden rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-600 transition hover:border-primary hover:text-primary sm:block">
+                        حساب جديد
+                    </a>
+                    <a href="{{ route('login') }}" class="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600">
+                        دخول
+                    </a>
+                </div>
             @endauth
         </div>
     </header>
@@ -90,12 +108,17 @@
         $toastPanelLabel = match (true) {
             (bool) $toastUser?->hasRole('admin') => 'لوحة الأدمن',
             (bool) $toastUser?->hasRole('vendor') => 'لوحة البائع',
+            $toastUser?->deliveryProfile?->type === 'manager' => 'لوحة الشركة',
             (bool) $toastUser?->hasRole('delivery') => 'لوحة التوصيل',
             default => 'لوحتي',
         };
+        $refererPath = parse_url((string) request()->headers->get('referer', ''), PHP_URL_PATH) ?: '';
+        $cameFromPanel = (bool) preg_match('#^/(admin|vendor|delivery|company|account)(/|$)#', $refererPath);
+
         $showRoleToast = $toastUser
             && $toastUser->hasAnyRole(['vendor', 'admin', 'delivery'])
-            && ! request()->is('admin*', 'vendor*', 'delivery*');
+            && ! request()->is('admin*', 'vendor*', 'delivery*', 'company*')
+            && $cameFromPanel;
     @endphp
 
     @if ($showRoleToast)
@@ -129,6 +152,142 @@
             </div>
         </div>
     @endif
+
+    {{-- القائمة الجانبية --}}
+    <div id="side-menu" style="display:none" class="fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/40" data-menu-close></div>
+
+        <aside class="absolute inset-y-0 start-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-2xl">
+            <div class="flex items-center justify-between border-b border-gray-100 px-4 py-4">
+                <span class="text-sm font-extrabold">القائمة</span>
+                <button type="button" data-menu-close class="grid size-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600">
+                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-3">
+                @auth
+                    <div class="mb-3 flex items-center gap-3 rounded-2xl bg-gray-50 p-3">
+                        <span class="grid size-10 place-items-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white"
+                              @if (auth()->user()->avatar) data-avatar="{{ Storage::disk('public')->url(auth()->user()->avatar) }}" @endif>
+                            @if (auth()->user()->avatar)
+                                <img src="{{ Storage::disk('public')->url(auth()->user()->avatar) }}" alt="" class="size-full object-cover">
+                            @else
+                                {{ mb_substr(auth()->user()->name, 0, 1) }}
+                            @endif
+                        </span>
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-bold">{{ auth()->user()->name }}</p>
+                            <a href="{{ route('profile.show') }}" class="text-[10px] text-primary hover:underline">عرض الحساب</a>
+                        </div>
+                    </div>
+                @endauth
+
+                <a href="{{ route('home') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <span class="text-base">🏠</span> الرئيسية
+                </a>
+                <a href="{{ route('stores.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <span class="text-base">🏬</span> المتاجر
+                </a>
+
+                @auth
+                    <a href="{{ route('orders.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">🧾</span> طلباتي
+                    </a>
+
+                    @php
+                        $menuDelivery = auth()->user()->deliveryProfile;
+                        $menuVendor = auth()->user()->vendorProfile;
+                    @endphp
+
+                    @if ($menuVendor)
+                        @php
+                            $vendorPending = auth()->user()->vendorOrders()->where('status', 'pending')->count();
+                        @endphp
+                        <a href="{{ route('filament.vendor.resources.orders.index') }}"
+                           class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            <span class="flex items-center gap-3"><span class="text-base">🏪</span> طلبات متجري</span>
+                            @if ($vendorPending > 0)
+                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $vendorPending }}</span>
+                            @endif
+                        </a>
+                    @endif
+
+                    @if ($menuDelivery?->is_active && $menuDelivery->type === 'manager')
+                        @php
+                            $companyPending = \App\Models\Order::where('delivery_company_id', $menuDelivery->company_id)->whereNull('delivery_user_id')->count();
+                        @endphp
+                        <a href="{{ route('filament.company.resources.orders.index') }}"
+                           class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            <span class="flex items-center gap-3"><span class="text-base">🚚</span> التوصيلات</span>
+                            @if ($companyPending > 0)
+                                <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $companyPending }}</span>
+                            @endif
+                        </a>
+                    @elseif ($menuDelivery?->is_active)
+                        @php
+                            $driverActive = \App\Models\Order::where('delivery_user_id', auth()->id())->whereIn('status', ['confirmed', 'preparing', 'shipped'])->count();
+                        @endphp
+                        <a href="{{ route('filament.delivery.resources.orders.index') }}"
+                           class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                            <span class="flex items-center gap-3"><span class="text-base">🚚</span> توصيلاتي</span>
+                            @if ($driverActive > 0)
+                                <span class="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">{{ $driverActive }}</span>
+                            @endif
+                        </a>
+                    @endif
+
+                    <a href="{{ route('favorites.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">♥</span> المفضلة
+                    </a>
+                    <a href="{{ route('cart.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">🛒</span> السلة
+                    </a>
+                    <a href="{{ route('profile.show') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">👤</span> حسابي
+                    </a>
+
+                    @if (in_array(\App\Support\RoleHome::url(auth()->user()), ['/admin', '/vendor', '/delivery', '/company'], true))
+                        <a href="{{ \App\Support\RoleHome::url(auth()->user()) }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary/5">
+                            <span class="text-base">⚙️</span> لوحة التحكم
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('login') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">🛒</span> السلة
+                    </a>
+                    <a href="{{ route('login') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">🔑</span> تسجيل الدخول
+                    </a>
+                    <a href="{{ route('register') }}" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                        <span class="text-base">✨</span> حساب جديد
+                    </a>
+                @endauth
+            </nav>
+
+            @auth
+                <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100 p-3">
+                    @csrf
+                    <button type="submit" class="w-full rounded-xl border border-gray-200 py-2.5 text-xs font-semibold text-gray-600 hover:border-red-200 hover:text-red-600">
+                        تسجيل الخروج
+                    </button>
+                </form>
+            @endauth
+        </aside>
+    </div>
+
+    {{-- تكبير الصورة الشخصية --}}
+    <div id="avatar-lightbox" style="display:none" class="fixed inset-0 z-[60] items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
+        <button type="button" data-lightbox-close
+                class="absolute end-5 top-5 grid size-10 place-items-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+            <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+        </button>
+        <img data-lightbox-image alt="" class="max-h-[80vh] max-w-[90vw] rounded-full border-4 border-white/20 object-cover shadow-2xl">
+    </div>
 
     {{-- نافذة معاينة المنتج --}}
     <dialog id="product-modal" class="fixed inset-0 m-auto h-fit max-h-[92vh] w-[min(94vw,880px)] overflow-y-auto rounded-3xl border-0 bg-transparent p-0 backdrop:bg-black/60 backdrop:backdrop-blur-sm">
@@ -188,15 +347,26 @@
                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"/></svg>
                 <span class="text-[11px] font-medium">المتاجر</span>
             </a>
-            <a href="#" class="flex flex-col items-center gap-1 py-2.5 text-gray-500">
+            <a href="{{ auth()->check() ? route('cart.index') : route('login') }}"
+               class="relative flex flex-col items-center gap-1 py-2.5 {{ auth()->check() ? 'text-gray-500' : 'text-gray-500' }}">
                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272"/></svg>
                 <span class="text-[11px] font-medium">السلة</span>
+                @auth
+                    @php
+                        $bottomCartCount = auth()->user()->cart?->items()->sum('quantity') ?? 0;
+                    @endphp
+                    @if ($bottomCartCount > 0)
+                        <span class="absolute -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white">{{ $bottomCartCount }}</span>
+                    @endif
+                @endauth
             </a>
-            <a href="{{ auth()->check() ? \App\Support\RoleHome::url(auth()->user()) : route('login') }}" class="flex flex-col items-center gap-1 py-2.5 text-gray-500">
+            <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="flex flex-col items-center gap-1 py-2.5 text-gray-500">
                 <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                 <span class="text-[11px] font-medium">حسابي</span>
             </a>
         </div>
     </nav>
+
+    @stack('scripts')
 </body>
 </html>
