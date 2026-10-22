@@ -71,8 +71,7 @@ class User extends Authenticatable implements FilamentUser
             'delivery' => $this->hasRole('delivery')
                 && $this->deliveryProfile?->type === DeliveryProfile::TYPE_DRIVER
                 && $this->deliveryProfile?->is_active,
-            'company' => $this->hasRole('delivery')
-                && $this->deliveryProfile?->type === DeliveryProfile::TYPE_MANAGER
+            'company' => $this->hasRole('delivery_manager')
                 && $this->deliveryProfile?->is_active
                 && $this->deliveryProfile?->company?->is_active,
             default => false,

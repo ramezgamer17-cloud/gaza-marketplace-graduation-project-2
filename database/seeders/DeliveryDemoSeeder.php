@@ -30,7 +30,7 @@ class DeliveryDemoSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-        $manager->syncRoles(['delivery']);
+        $manager->syncRoles(['delivery_manager']);
 
         $company = DeliveryCompany::firstOrCreate(
             ['name' => 'توصيل غزة السريع'],

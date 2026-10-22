@@ -29,21 +29,38 @@ class CheckoutService
         $customerId = $cart->user_id;
         $cartId = $cart->id;
 
-        return DB::transaction(function () use ($groups, $data, $customerId, $cartId) {
+        $customerZoneId = (int) ($data['delivery_zone_id'] ?? 0);
+
+        if (! $customerZoneId) {
+            throw new RuntimeException('اختر منطقة التوصيل أولًا.');
+        }
+
+        $fees = app(DeliveryFeeCalculator::class)->feesForGroups($groups, $customerZoneId);
+
+        $orders = DB::transaction(function () use ($groups, $data, $customerId, $cartId, $customerZoneId, $fees) {
             $orders = collect();
 
             foreach ($groups as $group) {
                 $this->assertStock($group->items);
 
+                $fee = $fees[$group->vendor->id] ?? null;
+
+                if ($fee === null) {
+                    $storeName = $group->vendor->vendorProfile?->store_name ?? $group->vendor->name;
+
+                    throw new RuntimeException("لا يمكن التوصيل من «{$storeName}» — لم يحدد موقعه بعد أو منطقته غير مغطاة.");
+                }
+
                 $order = Order::create([
                     'user_id' => $customerId,
                     'vendor_id' => $group->vendor->id,
+                    'delivery_zone_id' => $customerZoneId,
                     'status' => Order::STATUS_PENDING,
                     'payment_method' => $data['payment_method'] ?? 'jawwal_pay',
                     'payment_status' => 'unpaid',
                     'subtotal' => $group->subtotal,
-                    'delivery_fee' => $group->delivery_fee,
-                    'total' => $group->total,
+                    'delivery_fee' => $fee,
+                    'total' => $group->subtotal + $fee,
                     'customer_name' => $data['customer_name'],
                     'customer_phone' => $data['customer_phone'],
                     'shipping_address' => $data['shipping_address'],
@@ -69,6 +86,33 @@ class CheckoutService
 
             return $orders;
         });
+
+        $this->notifyAboutOrders($orders);
+
+        return $orders;
+    }
+
+    /**
+     * إشعار الإدارة والبائع بكل طلب جديد.
+     *
+     * @param  Collection<int, Order>  $orders
+     */
+    protected function notifyAboutOrders(Collection $orders): void
+    {
+        $admins = \App\Models\User::query()
+            ->whereHas('roles', fn ($query) => $query->where('name', 'admin'))
+            ->get();
+
+        foreach ($orders as $order) {
+            \Illuminate\Support\Facades\Notification::send(
+                $admins,
+                new \App\Notifications\NewOrderNotification($order)
+            );
+
+            if ($order->vendor) {
+                $order->vendor->notify(new \App\Notifications\NewOrderNotification($order));
+            }
+        }
     }
 
     /**

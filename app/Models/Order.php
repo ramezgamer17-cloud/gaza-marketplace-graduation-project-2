@@ -35,6 +35,8 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'payment_reference',
+        'payment_phone',
+        'payment_code',
         'subtotal',
         'delivery_fee',
         'total',
@@ -99,6 +101,11 @@ class Order extends Model
     public function deliveryCompany(): BelongsTo
     {
         return $this->belongsTo(DeliveryCompany::class, 'delivery_company_id');
+    }
+
+    public function deliveryZone(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryZone::class, 'delivery_zone_id');
     }
 
     public function items(): HasMany

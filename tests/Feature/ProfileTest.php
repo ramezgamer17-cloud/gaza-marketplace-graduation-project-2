@@ -94,6 +94,30 @@ class ProfileTest extends TestCase
         $this->assertFalse($user->vendorProfile->is_active);
     }
 
+    public function test_admin_account_page_hides_the_completion_section(): void
+    {
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $this->actingAs($admin)
+            ->get('/account')
+            ->assertSuccessful()
+            ->assertDontSee('إكمال بيانات الحساب')
+            ->assertSee('تعديل البيانات');
+    }
+
+    public function test_customer_still_sees_the_completion_section(): void
+    {
+        $customer = User::factory()->create();
+
+        $this->actingAs($customer)
+            ->get('/account')
+            ->assertSuccessful()
+            ->assertSee('إكمال بيانات الحساب');
+    }
+
     public function test_customer_can_join_delivery_from_account(): void
     {
         $zone = \App\Models\DeliveryZone::create(['name' => 'الوسطى', 'slug' => 'c1']);

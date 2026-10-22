@@ -40,15 +40,14 @@ class DeliveryPanelsTest extends TestCase
 
     protected function manager(bool $active = true): array
     {
-        Role::firstOrCreate(['name' => 'delivery', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'delivery_manager', 'guard_name' => 'web']);
 
         $user = User::factory()->create();
-        $user->assignRole('delivery');
+        $user->assignRole('delivery_manager');
 
         $company = DeliveryCompany::create([
             'name' => 'شركة '.uniqid(),
             'is_active' => true,
-            'manager_id' => $user->id,
         ]);
 
         $profile = DeliveryProfile::create([
@@ -58,6 +57,8 @@ class DeliveryPanelsTest extends TestCase
             'zone_id' => $this->zone()->id,
             'is_active' => $active,
         ]);
+
+        $company->update(['manager_id' => $user->id]);
 
         return [$user, $company, $profile];
     }

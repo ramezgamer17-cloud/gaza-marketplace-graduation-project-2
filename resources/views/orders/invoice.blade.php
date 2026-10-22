@@ -8,9 +8,17 @@
 
         <div class="mb-4 flex items-center justify-between print:hidden">
             <a href="{{ route('orders.index') }}" class="text-xs font-semibold text-gray-500 hover:text-primary">← عودة إلى طلباتي</a>
-            <button onclick="window.print()" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-primary hover:text-primary">
-                طباعة الفاتورة
-            </button>
+            <div class="flex items-center gap-2">
+                @if ($order->payment_status !== 'paid' && $order->payment_method === 'jawwal_pay')
+                    <a href="{{ route('payment.show', $order) }}"
+                       class="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary-600">
+                        ادفع الآن — جوال بي
+                    </a>
+                @endif
+                <button onclick="window.print()" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-primary hover:text-primary">
+                    طباعة الفاتورة
+                </button>
+            </div>
         </div>
 
         <article class="overflow-hidden rounded-2xl border border-gray-100 bg-white">
@@ -49,6 +57,9 @@
                     <p class="text-sm font-bold text-ink">{{ $order->customer_name }}</p>
                     <p class="mt-0.5 text-[11px] text-gray-500" dir="ltr">{{ $order->customer_phone }}</p>
                     <p class="mt-0.5 text-[11px] text-gray-500">{{ $order->shipping_address }}</p>
+                    @if ($order->delivery_zone_id)
+                        <p class="mt-0.5 text-[11px] text-gray-500">منطقة التوصيل: {{ $order->deliveryZone?->name }}</p>
+                    @endif
                     @if ($order->deliveryUser)
                         <p class="mt-1 text-[11px] text-gray-500">المندوب: {{ $order->deliveryUser->name }}</p>
                     @endif

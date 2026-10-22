@@ -1,18 +1,12 @@
 <?php
 
-namespace App\Filament\Resources\DeliveryProfiles;
+namespace App\Filament\Concerns;
 
-use App\Filament\Resources\DeliveryProfiles\Pages\CreateDeliveryProfile;
-use App\Filament\Resources\DeliveryProfiles\Pages\EditDeliveryProfile;
-use App\Filament\Resources\DeliveryProfiles\Pages\ListDeliveryProfiles;
 use App\Models\DeliveryProfile;
 use App\Models\DeliveryZone;
-use App\Models\User;
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,24 +18,28 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
-class DeliveryProfileResource extends Resource
+abstract class BaseDeliveryProfileResource extends Resource
 {
     protected static ?string $model = DeliveryProfile::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;
 
-    protected static ?string $modelLabel = 'ملف توصيل';
-
-    protected static ?string $pluralModelLabel = 'طلبات التوصيل';
-
     protected static string|\UnitEnum|null $navigationGroup = 'التوصيل';
 
     protected static ?int $navigationSort = 2;
 
+    abstract protected static function profileType(): string;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('type', static::profileType());
+    }
+
     public static function getNavigationBadge(): ?string
     {
-        $count = DeliveryProfile::query()->where('is_active', false)->count();
+        $count = static::getEloquentQuery()->where('is_active', false)->count();
 
         return $count > 0 ? (string) $count : null;
     }
@@ -62,20 +60,13 @@ class DeliveryProfileResource extends Resource
                     ->preload()
                     ->required(),
 
-                Select::make('type')
-                    ->label('النوع')
-                    ->options([
-                        DeliveryProfile::TYPE_DRIVER => 'مندوب توصيل',
-                        DeliveryProfile::TYPE_MANAGER => 'مدير شركة',
-                    ])
-                    ->required(),
-
                 Select::make('company_id')
                     ->label('الشركة')
                     ->relationship('company', 'name')
                     ->searchable()
                     ->preload()
-                    ->placeholder('بدون شركة (مستقل)'),
+                    ->placeholder('بدون شركة (مستقل)')
+                    ->visible(fn () => static::profileType() === DeliveryProfile::TYPE_DRIVER),
 
                 Select::make('zone_id')
                     ->label('منطقة العمل')
@@ -111,18 +102,14 @@ class DeliveryProfileResource extends Resource
                     ->label('الجوال')
                     ->toggleable(),
 
-                TextColumn::make('type')
-                    ->label('النوع')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state) => $state === DeliveryProfile::TYPE_MANAGER ? 'مدير شركة' : 'مندوب')
-                    ->color(fn (string $state) => $state === DeliveryProfile::TYPE_MANAGER ? 'info' : 'gray'),
-
                 TextColumn::make('company.name')
                     ->label('الشركة')
-                    ->placeholder('مستقل'),
+                    ->placeholder('مستقل')
+                    ->visible(fn () => static::profileType() === DeliveryProfile::TYPE_DRIVER),
 
                 TextColumn::make('zone.name')
                     ->label('المنطقة')
+                    ->badge()
                     ->placeholder('—'),
 
                 TextColumn::make('is_active')
@@ -137,18 +124,12 @@ class DeliveryProfileResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('type')
-                    ->label('النوع')
-                    ->options([
-                        DeliveryProfile::TYPE_DRIVER => 'مندوب',
-                        DeliveryProfile::TYPE_MANAGER => 'مدير شركة',
-                    ]),
-
                 SelectFilter::make('company_id')
                     ->label('الشركة')
                     ->relationship('company', 'name')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->visible(fn () => static::profileType() === DeliveryProfile::TYPE_DRIVER),
 
                 TernaryFilter::make('is_active')
                     ->label('الحالة')
@@ -176,20 +157,6 @@ class DeliveryProfileResource extends Resource
 
                 EditAction::make(),
                 DeleteAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => ListDeliveryProfiles::route('/'),
-            'create' => CreateDeliveryProfile::route('/create'),
-            'edit' => EditDeliveryProfile::route('/{record}/edit'),
-        ];
     }
 }

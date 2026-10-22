@@ -136,10 +136,17 @@ class ProfileController extends Controller
                 return;
             }
 
-            Role::firstOrCreate(['name' => 'delivery', 'guard_name' => 'web']);
+            $roleName = ($validated['delivery_type'] ?? null) === 'manager' ? 'delivery_manager' : 'delivery';
+            $otherRole = $roleName === 'delivery_manager' ? 'delivery' : 'delivery_manager';
 
-            if (! $user->hasRole('delivery')) {
-                $user->assignRole('delivery');
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+
+            if (! $user->hasRole($roleName)) {
+                $user->assignRole($roleName);
+            }
+
+            if ($user->hasRole($otherRole)) {
+                $user->removeRole($otherRole);
             }
 
             $companyId = $validated['company_id'] ?? null;

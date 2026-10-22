@@ -25,6 +25,7 @@ class DeliveryPanelProvider extends PanelProvider
             ->id('delivery')
             ->path('delivery')
             ->login()
+            ->databaseNotifications()
             ->brandName('سوق غزة — لوحة المندوب')
             ->font('Cairo', url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap')
             ->colors(['primary' => Color::Sky])
