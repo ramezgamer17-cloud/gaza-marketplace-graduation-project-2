@@ -4,9 +4,25 @@
     $hasDiscount = $product->compare_at_price && $product->compare_at_price > $product->price;
     $initial = mb_substr($product->name, 0, 1);
     $imageUrl = $product->thumbnail ? Storage::disk('public')->url($product->thumbnail) : '';
+
+    static $favoriteIds = null;
+    if ($favoriteIds === null) {
+        $favoriteIds = auth()->check() ? auth()->user()->favorites()->pluck('product_id')->all() : [];
+    }
+    $isFavorite = in_array($product->id, $favoriteIds, true);
 @endphp
 
-<article class="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+<article class="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
+
+    @auth
+        <form method="POST" action="{{ route('favorites.toggle', $product) }}" class="absolute end-2 bottom-3 z-10">
+            @csrf
+            <button type="submit" title="{{ $isFavorite ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة' }}"
+                    class="grid size-8 place-items-center rounded-full bg-white/90 text-base shadow-sm backdrop-blur transition hover:scale-110 {{ $isFavorite ? 'text-red-500' : 'text-gray-400' }}">
+                {{ $isFavorite ? '♥' : '♡' }}
+            </button>
+        </form>
+    @endauth
 
     {{-- الضغط على المنتج يفتح نافذة المعاينة --}}
     <button type="button" class="block w-full text-start"

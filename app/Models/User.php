@@ -32,6 +32,8 @@ class User extends Authenticatable implements FilamentUser
         'address',
         'is_active',
         'password',
+        'provider',
+        'provider_id',
     ];
 
     /**
@@ -66,7 +68,13 @@ class User extends Authenticatable implements FilamentUser
         return match ($panel->getId()) {
             'admin' => $this->hasRole('admin'),
             'vendor' => $this->hasRole('vendor'),
-            'delivery' => $this->hasRole('delivery'),
+            'delivery' => $this->hasRole('delivery')
+                && $this->deliveryProfile?->type === DeliveryProfile::TYPE_DRIVER
+                && $this->deliveryProfile?->is_active,
+            'company' => $this->hasRole('delivery')
+                && $this->deliveryProfile?->type === DeliveryProfile::TYPE_MANAGER
+                && $this->deliveryProfile?->is_active
+                && $this->deliveryProfile?->company?->is_active,
             default => false,
         };
     }
@@ -78,6 +86,27 @@ class User extends Authenticatable implements FilamentUser
     public function vendorProfile(): HasOne
     {
         return $this->hasOne(VendorProfile::class);
+    }
+
+    public function deliveryProfile(): HasOne
+    {
+        return $this->hasOne(DeliveryProfile::class);
+    }
+
+    /** الشركة التي يديرها هذا المستخدم (إن كان مدير شركة توصيل). */
+    public function managedCompany(): HasOne
+    {
+        return $this->hasOne(DeliveryCompany::class, 'manager_id');
+    }
+
+    public function isDeliveryDriver(): bool
+    {
+        return $this->deliveryProfile?->type === DeliveryProfile::TYPE_DRIVER;
+    }
+
+    public function isDeliveryManager(): bool
+    {
+        return $this->deliveryProfile?->type === DeliveryProfile::TYPE_MANAGER;
     }
 
     public function products(): HasMany

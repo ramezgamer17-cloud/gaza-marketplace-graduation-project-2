@@ -155,11 +155,37 @@ class StorefrontTest extends TestCase
         ]);
 
         $this->actingAs($vendor)
+            ->withHeader('referer', config('app.url').'/vendor')
             ->get('/')
             ->assertSuccessful()
             ->assertSee('أنت تتصفّح السوق كزبون')
             ->assertSee('العودة إلى لوحة البائع')
             ->assertSee('role-toast', false);
+    }
+
+    public function test_vendor_toast_appears_only_when_coming_from_the_panel(): void
+    {
+        $this->makeStore();
+
+        $vendor = User::factory()->create();
+        $vendor->assignRole(\Spatie\Permission\Models\Role::firstOrCreate(['name' => 'vendor', 'guard_name' => 'web']));
+        \App\Models\VendorProfile::create([
+            'user_id' => $vendor->id,
+            'store_name' => 'متجر البائع',
+            'store_type' => 'supermarket',
+        ]);
+
+        // قادم من اللوحة → يظهر
+        $this->actingAs($vendor)
+            ->withHeader('referer', config('app.url').'/vendor')
+            ->get('/')
+            ->assertSee('أنت تتصفّح السوق كزبون');
+
+        // تحديث الصفحة أو إجراء داخل السوق → لا يظهر
+        $this->actingAs($vendor)
+            ->withHeader('referer', config('app.url').'/')
+            ->get('/')
+            ->assertDontSee('أنت تتصفّح السوق كزبون');
     }
 
     public function test_customer_does_not_see_the_role_toast(): void
@@ -173,6 +199,16 @@ class StorefrontTest extends TestCase
             ->get('/')
             ->assertSuccessful()
             ->assertDontSee('role-toast', false);
+    }
+
+    public function test_guest_cart_link_points_to_login(): void
+    {
+        $this->makeStore();
+
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertDontSee('href="'.route('cart.index').'"', false)
+            ->assertSee('href="'.route('login').'"', false);
     }
 
     public function test_guest_can_open_home_and_login(): void

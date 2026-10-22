@@ -20,7 +20,7 @@
                 <div class="min-w-0 flex-1 pb-1 pt-3">
                     <h1 class="truncate text-xl font-extrabold text-ink">{{ $vendorProfile->store_name }}</h1>
                     <p class="mt-0.5 text-xs text-gray-500">
-                        {{ $vendorProfile->address ?? 'غزة' }}
+                        {{ $vendorProfile->full_address ?: 'غزة' }}
                         @if ($vendorProfile->delivery_time) · التجهيز خلال {{ $vendorProfile->delivery_time }} دقيقة @endif
                     </p>
                 </div>

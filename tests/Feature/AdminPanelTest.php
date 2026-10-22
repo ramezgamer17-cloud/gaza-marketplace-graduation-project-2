@@ -122,6 +122,41 @@ class AdminPanelTest extends TestCase
             ->assertSee('الكمية');
     }
 
+    public function test_admin_can_open_delivery_screens(): void
+    {
+        $admin = $this->makeAdmin();
+
+        foreach ([
+            '/admin/delivery-companies',
+            '/admin/delivery-companies/create',
+            '/admin/delivery-profiles',
+            '/admin/delivery-profiles/create',
+        ] as $url) {
+            $this->actingAs($admin)->get($url)->assertSuccessful();
+        }
+    }
+
+    public function test_admin_can_approve_delivery_profile(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $driverUser = \App\Models\User::factory()->create();
+        $zone = \App\Models\DeliveryZone::create(['name' => 'الشمال', 'slug' => 'n-approve']);
+
+        $profile = \App\Models\DeliveryProfile::create([
+            'user_id' => $driverUser->id,
+            'type' => 'driver',
+            'zone_id' => $zone->id,
+            'is_active' => false,
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(\App\Filament\Resources\DeliveryProfiles\Pages\ListDeliveryProfiles::class)
+            ->callAction(\Filament\Actions\Testing\TestAction::make('approve')->table($profile));
+
+        $this->assertTrue($profile->fresh()->is_active);
+    }
+
     public function test_dashboard_widgets_render_without_errors(): void
     {
         $admin = $this->makeAdmin();

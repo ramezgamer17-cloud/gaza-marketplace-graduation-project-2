@@ -143,6 +143,31 @@ class CartAndCheckoutTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_invoice_numbers_are_unique_and_sequential(): void
+    {
+        $customer = User::factory()->create();
+        [, , $productA] = $this->makeVendor('متجر أ', 10);
+        [, , $productB] = $this->makeVendor('متجر ب', 20);
+
+        $this->actingAs($customer)->post(route('cart.add', $productA));
+        $this->actingAs($customer)->post(route('cart.add', $productB));
+        $this->actingAs($customer)->post(route('checkout.store'), [
+            'customer_name' => 'زبون',
+            'customer_phone' => '0599000000',
+            'shipping_address' => 'غزة',
+            'payment_method' => 'jawwal_pay',
+        ]);
+
+        $numbers = Order::pluck('order_number')->all();
+
+        $this->assertCount(2, $numbers);
+        $this->assertCount(2, array_unique($numbers), 'أرقام الفواتير يجب أن تكون مختلفة');
+
+        foreach ($numbers as $number) {
+            $this->assertMatchesRegularExpression('/^INV-\d{6}$/', $number);
+        }
+    }
+
     public function test_empty_cart_redirects_checkout(): void
     {
         $customer = User::factory()->create();

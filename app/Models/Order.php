@@ -30,6 +30,7 @@ class Order extends Model
         'user_id',
         'vendor_id',
         'delivery_user_id',
+        'delivery_company_id',
         'status',
         'payment_method',
         'payment_status',
@@ -58,9 +59,26 @@ class Order extends Model
 
     protected static function booted(): void
     {
+        // رقم مؤقت فريد يمنع التعارض، ثم يتحول إلى رقم تسلسلي دائم بعد الحفظ
         static::creating(function (Order $order) {
-            $order->order_number ??= 'ORD-'.now()->format('ymd').'-'.Str::upper(Str::random(6));
+            $order->order_number ??= 'TMP-'.Str::uuid();
         });
+
+        static::created(function (Order $order) {
+            if (str_starts_with((string) $order->order_number, 'TMP-')) {
+                $order->forceFill([
+                    'order_number' => static::formatInvoiceNumber($order->id),
+                ])->saveQuietly();
+            }
+        });
+    }
+
+    /**
+     * رقم الفاتورة النهائي: INV-000001 (فريد لكل طلب وقابل للبحث).
+     */
+    public static function formatInvoiceNumber(int $id): string
+    {
+        return 'INV-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT);
     }
 
     public function customer(): BelongsTo
@@ -76,6 +94,11 @@ class Order extends Model
     public function deliveryUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'delivery_user_id');
+    }
+
+    public function deliveryCompany(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryCompany::class, 'delivery_company_id');
     }
 
     public function items(): HasMany
