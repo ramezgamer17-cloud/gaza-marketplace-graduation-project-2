@@ -4,7 +4,14 @@
 
 @section('content')
 
-    <h1 class="mb-5 text-xl font-extrabold">طلباتي وفواتيري</h1>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">تابع كل طلباتك</span>
+            <h1>طلباتي وفواتيري</h1>
+            <p>{{ $orders->total() }} طلب · فاتورة مستقلة لكل متجر</p>
+        </div>
+        <a href="{{ route('home') }}" class="btn-ghost">← متابعة التسوق</a>
+    </div>
 
     @if ($orders->isEmpty())
         <div class="rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center">
@@ -26,10 +33,14 @@
                 @endphp
 
                 <a href="{{ route('orders.show', $order) }}"
-                   class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 transition hover:border-primary/30 hover:shadow-sm">
-                    <span class="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary/10 text-base font-extrabold text-primary"
+                   class="panel flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-md no-underline">
+                    <span class="store-logo green" style="flex:0 0 48px;height:48px;border-radius:15px;font-size:18px"
                           @if ($order->vendor->vendorProfile?->logo) style="background-image:url('{{ Storage::disk('public')->url($order->vendor->vendorProfile->logo) }}');background-size:cover;background-position:center" @endif>
-                        @unless ($order->vendor->vendorProfile?->logo){{ mb_substr($order->vendor->vendorProfile->store_name ?? $order->vendor->name, 0, 1) }}@endunless
+                        @if ($order->vendor->vendorProfile?->logo)
+                            <img src="{{ Storage::disk('public')->url($order->vendor->vendorProfile->logo) }}" alt="" class="size-full object-cover">
+                        @else
+                            {{ mb_substr($order->vendor->vendorProfile->store_name ?? $order->vendor->name, 0, 1) }}
+                        @endif
                     </span>
 
                     <div class="min-w-0 flex-1">
@@ -39,7 +50,7 @@
 
                     <div class="text-end">
                         <p class="text-sm font-extrabold text-primary">{{ number_format((float) $order->total, 2) }} شيكل</p>
-                        <span class="mt-1 inline-block rounded-lg px-2 py-0.5 text-[10px] font-bold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
+                        <span class="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold {{ $colors[$order->status] ?? 'bg-gray-100 text-gray-600' }}">
                             {{ \App\Models\Order::statusLabels()[$order->status] ?? $order->status }}
                         </span>
                     </div>

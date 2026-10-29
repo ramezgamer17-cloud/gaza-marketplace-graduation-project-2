@@ -48,7 +48,7 @@ class CartService
         }
 
         if ($item->product && $quantity > $item->product->stock) {
-            throw new RuntimeException("الكمية المتاحة من «{$item->product->name}» هي {$item->product->stock} فقط.");
+            throw new RuntimeException("وصلت إلى الحد الأقصى المتوفر من «{$item->product->name}» ({$item->product->stock} قطعة).");
         }
 
         $item->quantity = $quantity;

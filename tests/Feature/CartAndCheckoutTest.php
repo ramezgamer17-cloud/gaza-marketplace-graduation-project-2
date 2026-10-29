@@ -99,6 +99,51 @@ class CartAndCheckoutTest extends TestCase
         ]);
     }
 
+    public function test_add_to_cart_supports_ajax_without_page_reload(): void
+    {
+        $customer = User::factory()->create();
+        [, , $product] = $this->makeVendor('متجر', 10);
+
+        $this->actingAs($customer)
+            ->postJson(route('cart.add', $product))
+            ->assertOk()
+            ->assertJson(['ok' => true, 'count' => 1]);
+    }
+
+    public function test_cart_update_returns_json_without_reload(): void
+    {
+        $customer = User::factory()->create();
+        [, , $product] = $this->makeVendor('متجر', 10);
+
+        $this->actingAs($customer)->post(route('cart.add', $product), ['quantity' => 1]);
+
+        $item = \App\Models\CartItem::firstOrFail();
+
+        $this->actingAs($customer)
+            ->patchJson(route('cart.update', $item), ['quantity' => 3])
+            ->assertOk()
+            ->assertJsonPath('item.quantity', 3)
+            ->assertJsonPath('item.line_total', 30)
+            ->assertJsonPath('count', 3);
+    }
+
+    public function test_cart_remove_returns_json_without_reload(): void
+    {
+        $customer = User::factory()->create();
+        [, , $product] = $this->makeVendor('متجر', 10);
+
+        $this->actingAs($customer)->post(route('cart.add', $product));
+        $item = \App\Models\CartItem::firstOrFail();
+
+        $this->actingAs($customer)
+            ->postJson(route('cart.remove', $item), ['_method' => 'DELETE'])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('count', 0);
+
+        $this->assertDatabaseCount('cart_items', 0);
+    }
+
     public function test_cart_groups_products_by_vendor(): void
     {
         $customer = User::factory()->create();

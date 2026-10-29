@@ -4,12 +4,13 @@
 
 @section('content')
 
-    <div class="mb-5 flex items-center justify-between">
-        <h1 class="text-xl font-extrabold">إتمام الشراء</h1>
-        <a href="{{ route('cart.index') }}"
-           class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 transition hover:border-primary hover:text-primary">
-            ← رجوع إلى السلة
-        </a>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">الخطوة الأخيرة</span>
+            <h1>إتمام الشراء</h1>
+            <p>أكمل بيانات التوصيل ثم انتقل للدفع الآمن.</p>
+        </div>
+        <a href="{{ route('cart.index') }}" class="btn-ghost">← رجوع إلى السلة</a>
     </div>
 
     <form method="POST" action="{{ route('checkout.store') }}" class="grid gap-4 lg:grid-cols-3">
@@ -17,7 +18,7 @@
 
         <div class="space-y-4 lg:col-span-2">
             {{-- بيانات التوصيل --}}
-            <section class="rounded-2xl border border-gray-100 bg-white p-4">
+            <section class="panel p-5">
                 <h2 class="mb-3 text-sm font-extrabold">بيانات التوصيل</h2>
 
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -67,7 +68,7 @@
             </section>
 
             {{-- طريقة الدفع --}}
-            <section class="rounded-2xl border border-gray-100 bg-white p-4">
+            <section class="panel p-5">
                 <h2 class="mb-3 text-sm font-extrabold">طريقة الدفع</h2>
 
                 <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-3">
@@ -90,7 +91,7 @@
         </div>
 
         {{-- ملخص الطلب --}}
-        <aside class="h-fit rounded-2xl border border-gray-100 bg-white p-4">
+        <aside class="panel h-fit p-5 lg:sticky lg:top-24">
             <h2 class="mb-3 text-sm font-extrabold">ملخص الطلب</h2>
 
             <div class="space-y-3">
@@ -147,8 +148,7 @@
 
             <p class="mt-1 text-[10px] text-gray-400">فاتورة مستقلة لكل متجر · {{ $rows->count() }} متجر</p>
 
-            <button type="submit"
-                    class="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-bold text-white transition hover:bg-primary-600">
+            <button type="submit" class="btn-green mt-4 w-full">
                 تأكيد الطلب
             </button>
         </aside>
