@@ -61,9 +61,9 @@ class Order extends Model
 
     protected static function booted(): void
     {
-        // رقم مؤقت فريد يمنع التعارض، ثم يتحول إلى رقم تسلسلي دائم بعد الحفظ
+        // رقم مؤقت قصير يمنع التعارض، ثم يتحول إلى رقم تسلسلي دائم بعد الحفظ
         static::creating(function (Order $order) {
-            $order->order_number ??= 'TMP-'.Str::uuid();
+            $order->order_number ??= 'TMP-'.Str::lower(Str::random(12));
         });
 
         static::created(function (Order $order) {

@@ -41,6 +41,10 @@
                     </button>
                 </form>
 
+                <a href="{{ route('orders.index') }}" class="mt-3 block text-center text-[11px] font-semibold text-gray-500 hover:text-primary">
+                    تخطّي الدفع الآن — عرض طلباتي
+                </a>
+
                 <p class="mt-3 text-center text-[10px] text-gray-400">صفحة تجريبية — لا يتم خصم أي مبالغ حقيقية.</p>
             @endif
         </div>

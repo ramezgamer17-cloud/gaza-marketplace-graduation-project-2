@@ -67,9 +67,32 @@ class PaymentController extends Controller
             'payment_reference' => 'JPAY-'.$order->order_number,
         ]);
 
+        // إن كانت هناك فواتير أخرى من نفس الطلب، انتقل لدفعها
+        $pendingIds = collect($request->session()->get('checkout_orders', []))
+            ->reject(fn ($id) => (int) $id === $order->id)
+            ->values();
+
+        $next = Order::query()
+            ->whereIn('id', $pendingIds)
+            ->where('payment_method', 'jawwal_pay')
+            ->where('payment_status', '!=', 'paid')
+            ->orderBy('id')
+            ->first();
+
+        if ($next) {
+            $pending = $pendingIds->reject(fn ($id) => (int) $id === $next->id)->values();
+            $request->session()->put('checkout_orders', $pending->all());
+
+            return redirect()
+                ->route('payment.show', $next)
+                ->with('status', 'تم دفع الفاتورة الأولى. أكمل دفع الفاتورة التالية.');
+        }
+
+        $request->session()->forget('checkout_orders');
+
         return redirect()
-            ->route('orders.show', $order)
-            ->with('status', 'تم الدفع بنجاح — طلبك قيد التنفيذ.');
+            ->route('orders.index')
+            ->with('status', 'تم الدفع بنجاح — طلبك مؤكد وقيد التنفيذ.');
     }
 
     protected function authorizeOwner(Order $order): void
