@@ -16,16 +16,16 @@
         };
     @endphp
 
-    {{-- الغلاف والصورة --}}
-    <section class="mb-5 overflow-hidden rounded-3xl border border-gray-100 bg-white">
-        <div class="h-32 bg-gradient-to-l from-primary-600 via-primary to-primary-400 sm:h-44"
-             @if ($user->cover) style="background-image:url('{{ Storage::disk('public')->url($user->cover) }}');background-size:cover;background-position:center" @endif>
-        </div>
+    {{-- الغلاف بعرض الشاشة --}}
+    <div style="width:100vw; margin-inline:calc(50% - 50vw); margin-top:-24px; height:clamp(190px,24vw,330px); background:linear-gradient(110deg,#064c3b,#08745c 55%,#173e83); {{ $user->cover ? "background-image:url('".Storage::disk('public')->url($user->cover)."');background-size:cover;background-position:center" : '' }}">
+    </div>
 
+    {{-- بطاقة الحساب (زجاجية شفافة فوق الغلاف) --}}
+    <section class="glass-card relative z-10 -mt-10 mb-5 rounded-3xl">
         <div class="px-5 pb-5">
             <div class="flex flex-wrap items-end justify-between gap-3">
                 <div class="flex items-end gap-4">
-                    <span class="-mt-12 block size-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-primary text-2xl font-extrabold text-white shadow-sm {{ $user->avatar ? 'cursor-zoom-in' : '' }}"
+                    <span class="profile-avatar -mt-16 block size-28 shrink-0 bg-primary text-2xl font-extrabold text-white {{ $user->avatar ? 'cursor-zoom-in' : '' }}"
                           @if ($user->avatar) data-avatar="{{ Storage::disk('public')->url($user->avatar) }}" @endif>
                         @if ($user->avatar)
                             <img src="{{ Storage::disk('public')->url($user->avatar) }}" alt="{{ $user->name }}" class="size-full object-cover">
@@ -40,7 +40,7 @@
                         <p class="mt-1 flex flex-wrap gap-1 text-[10px] font-bold">
                             @foreach ($user->getRoleNames() as $role)
                                 <span class="rounded-lg bg-primary/10 px-2 py-0.5 text-primary">
-                                    {{ match ($role) { 'admin' => 'أدمن', 'vendor' => 'بائع', 'delivery' => 'توصيل', default => 'زبون' } }}
+                                    {{ match ($role) { 'admin' => 'أدمن', 'vendor' => 'بائع', 'delivery' => 'مندوب توصيل', 'delivery_manager' => 'مدير شركة توصيل', default => 'زبون' } }}
                                 </span>
                             @endforeach
                         </p>

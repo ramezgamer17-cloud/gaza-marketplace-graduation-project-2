@@ -57,6 +57,16 @@ class StoreController extends Controller
 
         $uncategorized = $products->whereNull('section_id');
 
-        return view('stores.show', compact('vendorProfile', 'sections', 'products', 'uncategorized'));
+        $isFavorited = $vendorProfile->isFavoritedBy(auth()->id());
+        $ratingAverage = $vendorProfile->ratingAverage();
+        $ratingCount = $vendorProfile->ratingCount();
+        $userRating = auth()->check()
+            ? $vendorProfile->ratings()->where('user_id', auth()->id())->value('rating')
+            : null;
+
+        return view('stores.show', compact(
+            'vendorProfile', 'sections', 'products', 'uncategorized',
+            'isFavorited', 'ratingAverage', 'ratingCount', 'userRating'
+        ));
     }
 }

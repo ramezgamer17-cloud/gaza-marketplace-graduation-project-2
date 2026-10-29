@@ -157,6 +157,34 @@ class AdminPanelTest extends TestCase
         $this->assertTrue($profile->fresh()->is_active);
     }
 
+    public function test_admin_can_edit_market_settings(): void
+    {
+        $admin = $this->makeAdmin();
+        $setting = \App\Models\SiteSetting::current();
+
+        $this->actingAs($admin)
+            ->get('/admin/site-settings/'.$setting->id.'/edit')
+            ->assertSuccessful()
+            ->assertSee('إعدادات السوق');
+
+        $this->actingAs($admin)
+            ->get('/admin/site-settings')
+            ->assertRedirect('/admin/site-settings/'.$setting->id.'/edit');
+    }
+
+    public function test_home_page_uses_market_settings(): void
+    {
+        \App\Models\SiteSetting::current()->update([
+            'hero_title' => 'عنوان مخصص للسوق',
+            'hero_title_accent' => 'من الإعدادات',
+        ]);
+
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertSee('عنوان مخصص للسوق')
+            ->assertSee('من الإعدادات');
+    }
+
     public function test_admin_edit_page_has_a_back_button(): void
     {
         $admin = $this->makeAdmin();

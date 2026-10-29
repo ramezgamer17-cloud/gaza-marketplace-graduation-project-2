@@ -67,6 +67,7 @@ class HomeController extends Controller
             ->filter(fn (VendorProfile $store) => $store->showcaseProducts->isNotEmpty())
             ->values();
 
-        return view('home', compact('categories', 'stores', 'featuredProducts', 'storeSections'));
+        return view('home', compact('categories', 'stores', 'featuredProducts', 'storeSections'))
+            ->with('settings', \App\Models\SiteSetting::current());
     }
 }

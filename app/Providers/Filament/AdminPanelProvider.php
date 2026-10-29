@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
                 'الكتالوج',
                 'المتاجر',
                 'المستخدمون',
+                'الإعدادات',
             ])
             ->navigationItems([
                 \Filament\Navigation\NavigationItem::make('السوق')

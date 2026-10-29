@@ -18,14 +18,21 @@ class FavoriteController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('favorites.index', compact('products'));
+        $stores = \App\Models\VendorProfile::query()
+            ->active()
+            ->whereHas('favorites', fn ($query) => $query->where('user_id', auth()->id()))
+            ->with(['user' => fn ($query) => $query->withCount('products')])
+            ->get();
+
+        return view('favorites.index', compact('products', 'stores'));
     }
 
-    public function toggle(Request $request, Product $product): RedirectResponse
+    public function toggle(Request $request, Product $product): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $user = auth()->user();
 
         $existing = $user->favorites()->where('product_id', $product->id)->first();
+        $favorited = $existing === null;
 
         if ($existing) {
             $existing->delete();
@@ -33,6 +40,15 @@ class FavoriteController extends Controller
         } else {
             $user->favorites()->create(['product_id' => $product->id]);
             $message = 'أُضيف «'.$product->name.'» إلى المفضلة.';
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'favorited' => $favorited,
+                'count' => $user->favorites()->count(),
+                'message' => $message,
+            ]);
         }
 
         return back()->with('status', $message);

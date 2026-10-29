@@ -4,50 +4,53 @@
 
 @section('content')
 
-    <div class="mb-5">
-        <h1 class="text-xl font-extrabold">المتاجر</h1>
-        <p class="mt-1 text-xs text-gray-500">كل متاجر سوق غزة في مكان واحد.</p>
+    <div class="page-head">
+        <div>
+            <span class="eyebrow">كل متاجر غزة</span>
+            <h1>المتاجر</h1>
+            <p>{{ $stores->total() }} متجر موثوق · منتجات طازجة تصل إلى بابك</p>
+        </div>
     </div>
 
-    <form method="GET" action="{{ route('stores.index') }}" class="mb-5 flex gap-2">
+    <form method="GET" action="{{ route('stores.index') }}" class="panel mb-6 flex flex-wrap gap-2 p-3">
         <input type="search" name="q" value="{{ $query }}" placeholder="ابحث باسم المتجر…"
-               class="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15">
-        <button type="submit" class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-600">بحث</button>
+               class="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15">
+        <button type="submit" class="btn-green" style="min-height:42px;padding:0 22px">بحث</button>
     </form>
 
     @if ($stores->isEmpty())
-        <div class="rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center">
+        <div class="panel" style="padding:48px 20px;text-align:center">
             <p class="text-sm font-semibold text-gray-600">لا توجد متاجر مطابقة.</p>
         </div>
     @else
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($stores as $store)
-                <a href="{{ route('stores.show', $store) }}"
-                   class="group overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:border-primary/30 hover:shadow-md">
-                    <div class="relative h-24 bg-gradient-to-l from-primary-600 via-primary to-primary-400"
-                         @if ($store->cover) style="background-image:url('{{ Storage::disk('public')->url($store->cover) }}');background-size:cover;background-position:center" @endif>
+                <a href="{{ route('stores.show', $store) }}" class="store-tile">
+                    <div class="store-tile-cover"
+                         @if ($store->cover) style="background-image:url('{{ Storage::disk('public')->url($store->cover) }}')" @endif>
                     </div>
 
-                    <div class="px-4 pb-4">
-                        <div class="-mt-7 flex items-end gap-3">
-                            <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border-4 border-white bg-primary text-lg font-extrabold text-white"
-                                  @if ($store->logo) style="background-image:url('{{ Storage::disk('public')->url($store->logo) }}');background-size:cover;background-position:center" @endif>
-                                @unless ($store->logo){{ mb_substr($store->store_name, 0, 1) }}@endunless
-                            </span>
+                    <div class="store-tile-body">
+                        <div class="store-tile-logo">
+                            @if ($store->logo)
+                                <img src="{{ Storage::disk('public')->url($store->logo) }}" alt="{{ $store->store_name }}">
+                            @elseif ($store->cover)
+                                <img src="{{ Storage::disk('public')->url($store->cover) }}" alt="{{ $store->store_name }}">
+                            @else
+                                {{ mb_substr($store->store_name, 0, 1) }}
+                            @endif
                         </div>
 
-                        <h2 class="mt-2 truncate text-sm font-extrabold text-ink group-hover:text-primary">{{ $store->store_name }}</h2>
-                        <p class="mt-0.5 line-clamp-1 text-[11px] text-gray-500">
-                            {{ $store->description ?: 'متجر على سوق غزة' }}
-                        </p>
+                        <h2>{{ $store->store_name }}</h2>
+                        <p>{{ $store->description ?: 'متجر على سوق غزة' }}</p>
 
-                        <div class="mt-2 flex flex-wrap gap-1.5 text-[10px] font-semibold">
-                            <span class="rounded-lg bg-primary/10 px-2 py-0.5 text-primary">{{ $store->user?->products_count ?? 0 }} منتج</span>
-                            @if ($store->delivery_time)
-                                <span class="rounded-lg bg-gray-100 px-2 py-0.5 text-gray-600">{{ $store->delivery_time }} دقيقة</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="store-chip">{{ $store->user?->products_count ?? 0 }} منتج</span>
+                            @if ($store->zone)
+                                <span class="store-chip gray">{{ $store->zone->name }}</span>
                             @endif
                             @if ($store->is_featured)
-                                <span class="rounded-lg bg-amber-50 px-2 py-0.5 text-amber-600">مميز</span>
+                                <span class="store-chip gold">مميز</span>
                             @endif
                         </div>
                     </div>
@@ -55,7 +58,7 @@
             @endforeach
         </div>
 
-        <div class="mt-5">{{ $stores->links() }}</div>
+        <div class="mt-6">{{ $stores->links() }}</div>
     @endif
 
 @endsection

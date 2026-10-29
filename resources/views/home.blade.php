@@ -4,41 +4,77 @@
 
 @section('content')
 
-    {{-- الترحيب --}}
-    <section class="mb-8 overflow-hidden rounded-3xl bg-gradient-to-l from-primary-600 via-primary to-primary-400 p-6 text-white sm:p-9">
-        <div class="max-w-xl">
-            <p class="mb-2 text-xs font-semibold text-white/80">سوق غزة الإلكتروني</p>
-            <h1 class="text-2xl font-extrabold leading-snug sm:text-3xl">
-                كل ما تحتاجه من متاجر غزة<br class="hidden sm:block"> في مكان واحد
-            </h1>
-            <p class="mt-3 text-sm text-white/85">
-                تسوّق من عدة بائعين في سلة واحدة، وتابع طلبك حتى باب البيت.
-            </p>
+    {{-- الهيرو (بعرض الشاشة كامل) --}}
+    <div style="width:100vw; margin-inline:calc(50% - 50vw); margin-top:-24px">
+        <section class="hero">
+            <img src="{{ $settings->heroImageUrl() }}" alt="سوق غزة">
+            <div class="hero-shade"></div>
 
-            <div class="mt-5 flex flex-wrap gap-2">
-                <a href="{{ route('stores.index') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-bold text-primary transition hover:bg-white/90">
-                    تصفّح المتاجر
-                </a>
-                <a href="#showcase" class="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
-                    مختارات المتاجر
-                </a>
+            <div class="shell hero-content">
+                <span class="hero-kicker">
+                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="m12 3 1.4 4.6L18 9l-4.6 1.4L12 15l-1.4-4.6L6 9l4.6-1.4L12 3Z"/>
+                    </svg>
+                    {{ $settings->heroBadgeText() }}
+                </span>
+
+                <h1>
+                    {{ $settings->heroTitleText() }}<br>
+                    <em>{{ $settings->heroTitleAccentText() }}</em>
+                </h1>
+
+                <p>{{ $settings->heroSubtitleText() }}</p>
+
+                <div class="hero-actions">
+                    <a href="{{ route('stores.index') }}" class="primary-button">
+                        تسوّق الآن
+                        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M11 18l-6-6 6-6"/>
+                        </svg>
+                    </a>
+                    <span>
+                        <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                            <path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/>
+                        </svg>
+                        توصيل سريع إلى باب المنزل
+                    </span>
+                </div>
             </div>
-        </div>
-    </section>
+
+            @if ($stores->isNotEmpty())
+                <div class="hero-stat">
+                    <b>{{ $stores->count() + $categories->sum('products_count') }}</b>
+                    <span>متجر ومنتج<br>في مكان واحد</span>
+                </div>
+            @endif
+        </section>
+    </div>
 
     {{-- التصنيفات --}}
     @if ($categories->isNotEmpty())
-        <section class="mb-9">
-            <h2 class="mb-3 text-lg font-extrabold">تصفّح حسب التصنيف</h2>
+        <section class="categories">
+            <div class="simple-heading">
+                <div>
+                    <span class="eyebrow">تسوّق حسب الفئة</span>
+                    <h2>كل ما تحتاجه في مكان واحد</h2>
+                </div>
+                <a href="{{ route('stores.index') }}">
+                    عرض الكل
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                </a>
+            </div>
 
-            <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-                @foreach ($categories as $category)
-                    <a href="#" class="flex flex-col items-center gap-2 rounded-2xl border border-gray-100 bg-white p-3 text-center transition hover:border-primary/30 hover:shadow-sm">
-                        <span class="grid size-11 place-items-center rounded-xl bg-primary/10 text-base font-extrabold text-primary">
-                            {{ mb_substr($category->name, 0, 1) }}
+            <div class="category-row">
+                @php($tones = ['mint', 'blue', 'ice', 'lilac', 'sand'])
+                @foreach ($categories->take(5) as $i => $category)
+                    <a href="{{ route('stores.index') }}" class="category-card">
+                        <span class="category-icon {{ $tones[$i % 5] }}">{{ mb_substr($category->name, 0, 1) }}</span>
+                        <span>
+                            <b>{{ $category->name }}</b>
+                            <small>{{ $category->products_count }} منتج</small>
                         </span>
-                        <span class="line-clamp-1 text-xs font-semibold text-ink">{{ $category->name }}</span>
-                        <span class="text-[10px] text-gray-400">{{ $category->products_count }} منتج</span>
                     </a>
                 @endforeach
             </div>
@@ -47,86 +83,128 @@
 
     {{-- المتاجر --}}
     @if ($stores->isNotEmpty())
-        <section id="stores" class="mb-9 scroll-mt-20">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-extrabold">متاجر مميزة</h2>
-                <span class="text-xs text-gray-400">{{ $stores->count() }} متجر</span>
-            </div>
+        <section id="stores" class="stores-section">
+            <div class="shell">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">متاجر موثوقة</span>
+                        <h2>من حولك، إلى بابك</h2>
+                    </div>
+                    <div class="carousel-controls">
+                        <button type="button" data-scroll="stores-row" data-dir="-1" aria-label="السابق">
+                            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button type="button" data-scroll="stores-row" data-dir="1" aria-label="التالي">
+                            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                </div>
 
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($stores as $store)
-                    <a href="{{ route('stores.show', $store) }}"
-                       class="group flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 transition hover:border-primary/30 hover:shadow-md">
-                        <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary/10 text-lg font-extrabold text-primary"
-                              @if ($store->logo) style="background-image:url('{{ Storage::disk('public')->url($store->logo) }}');background-size:cover;background-position:center" @endif>
-                            @unless ($store->logo){{ mb_substr($store->store_name, 0, 1) }}@endunless
-                        </span>
+                <div class="store-row snap-row" id="stores-row">
+                    @php($logoClasses = ['green', 'navy', 'orange', 'teal'])
+                    @foreach ($stores as $i => $store)
+                        <a href="{{ route('stores.show', $store) }}" class="store-card">
+                            @if ($store->is_featured)
+                                <span class="offer-tag">مميز</span>
+                            @endif
 
-                        <span class="min-w-0 flex-1">
-                            <span class="block truncate text-sm font-bold text-ink group-hover:text-primary">{{ $store->store_name }}</span>
-                            <span class="mt-0.5 block text-[11px] text-gray-500">
-                                {{ $store->user?->products_count ?? 0 }} منتج
-                                @if ($store->delivery_time) · {{ $store->delivery_time }} دقيقة @endif
+                            <span class="store-logo {{ $logoClasses[$i % 4] }}" style="border-radius:999px">
+                                @if ($store->logo)
+                                    <img src="{{ Storage::disk('public')->url($store->logo) }}" alt="{{ $store->store_name }}">
+                                @elseif ($store->cover)
+                                    <img src="{{ Storage::disk('public')->url($store->cover) }}" alt="{{ $store->store_name }}">
+                                @else
+                                    {{ mb_substr($store->store_name, 0, 1) }}
+                                @endif
                             </span>
+
+                            <span class="store-copy">
+                                <h3>{{ $store->store_name }}</h3>
+                                <p>{{ $store->description ?: ($store->zone?->name ?? 'متجر على سوق غزة') }}</p>
+                                <span class="rating">
+                                    <b>★</b>
+                                    {{ ($store->user?->products_count ?? 0).' منتج' }}
+                                </span>
+                            </span>
+
+                            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:#c8d6d1; transform: rotate(180deg)">
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- العروض --}}
+    @if ($featuredProducts->isNotEmpty())
+        <section class="deals-section">
+            <div class="simple-heading">
+                <div>
+                    <span class="eyebrow">عروض اليوم</span>
+                    <h2>وفر أكثر، استمتع أكثر</h2>
+                </div>
+                <a href="{{ route('stores.index') }}">
+                    عرض الكل
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+            </div>
+
+            <div class="product-row snap-row">
+                @foreach ($featuredProducts as $product)
+                    @include('partials.product-card', ['product' => $product, 'large' => $loop->index < 3])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    {{-- مختارات المتاجر --}}
+    @if ($storeSections->isNotEmpty())
+        <section id="picks" class="picks-section">
+            <div class="shell">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">مختارات المتاجر</span>
+                        <h2>اختيارات أصحاب المتاجر</h2>
+                    </div>
+                    <span style="font-size:11px;color:var(--muted)">كل متجر يختار منتجاته بنفسه</span>
+                </div>
+
+                @foreach ($storeSections as $store)
+                    <div class="store-strip"
+                         @if ($store->cover) style="background-image:linear-gradient(100deg, rgba(4,59,45,.94) 0%, rgba(6,95,70,.82) 45%, rgba(15,52,90,.72) 100%), url('{{ Storage::disk('public')->url($store->cover) }}'); background-size:cover; background-position:center" @endif>
+                        <span class="store-logo" style="flex:0 0 46px;height:46px;border-radius:999px;font-size:16px;border:2px solid rgba(255,255,255,.55)">
+                            @if ($store->logo)
+                                <img src="{{ Storage::disk('public')->url($store->logo) }}" alt="{{ $store->store_name }}">
+                            @elseif ($store->cover)
+                                <img src="{{ Storage::disk('public')->url($store->cover) }}" alt="{{ $store->store_name }}">
+                            @else
+                                {{ mb_substr($store->store_name, 0, 1) }}
+                            @endif
                         </span>
 
-                        <svg class="size-4 shrink-0 text-gray-300 transition group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m15 19-7-7 7-7"/>
-                        </svg>
-                    </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- عروض عامة --}}
-    @if ($featuredProducts->isNotEmpty())
-        <section class="mb-9">
-            <h2 class="mb-3 text-lg font-extrabold">عروض ومنتجات مميزة</h2>
-
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                @foreach ($featuredProducts as $product)
-                    @include('partials.product-card', ['product' => $product])
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- مختارات كل متجر --}}
-    @if ($storeSections->isNotEmpty())
-        <section id="showcase" class="scroll-mt-20">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-lg font-extrabold">مختارات المتاجر</h2>
-                <span class="text-xs text-gray-400">كل متجر يختار منتجاته بنفسه</span>
-            </div>
-
-            <div class="space-y-4">
-                @foreach ($storeSections as $store)
-                    <div class="overflow-hidden rounded-3xl border border-gray-100 bg-white">
-                        <header class="flex items-center justify-between gap-3 border-b border-gray-50 px-4 py-3">
-                            <a href="{{ route('stores.show', $store) }}" class="group flex min-w-0 items-center gap-3">
-                                <span class="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-primary/10 text-base font-extrabold text-primary"
-                                      @if ($store->logo) style="background-image:url('{{ Storage::disk('public')->url($store->logo) }}');background-size:cover;background-position:center" @endif>
-                                    @unless ($store->logo){{ mb_substr($store->store_name, 0, 1) }}@endunless
-                                </span>
-
-                                <span class="min-w-0">
-                                    <span class="block truncate text-sm font-extrabold text-ink group-hover:text-primary">{{ $store->store_name }}</span>
-                                    <span class="block text-[11px] text-gray-500">{{ $store->showcaseProducts->count() }} منتج مميز</span>
-                                </span>
-                            </a>
-
-                            <a href="{{ route('stores.show', $store) }}"
-                               class="shrink-0 rounded-xl border border-gray-200 px-3 py-1.5 text-[11px] font-bold text-gray-600 transition hover:border-primary hover:text-primary">
-                                زيارة المتجر
-                            </a>
-                        </header>
-
-                        <div class="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
-                            @foreach ($store->showcaseProducts as $product)
-                                @include('partials.product-card', ['product' => $product])
-                            @endforeach
+                        <div>
+                            <span>اختيارات {{ $store->showcaseProducts->count() }} منتج</span>
+                            <h2>{{ $store->store_name }}</h2>
                         </div>
+
+                        <a href="{{ route('stores.show', $store) }}">زيارة المتجر</a>
+                    </div>
+
+                    <div class="carousel-controls" style="margin:0 0 10px; justify-content:flex-start">
+                        <button type="button" data-scroll="picks-row-{{ $store->id }}" data-dir="-1" aria-label="السابق">
+                            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <button type="button" data-scroll="picks-row-{{ $store->id }}" data-dir="1" aria-label="التالي">
+                            <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="product-row snap-row picks-row" id="picks-row-{{ $store->id }}" style="margin-bottom:26px">
+                        @foreach ($store->showcaseProducts as $product)
+                            @include('partials.product-card', ['product' => $product])
+                        @endforeach
                     </div>
                 @endforeach
             </div>
@@ -134,3 +212,17 @@
     @endif
 
 @endsection
+
+@push('scripts')
+    <script>
+        document.querySelectorAll('[data-scroll]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const row = document.getElementById(button.dataset.scroll);
+                if (!row) return;
+                const amount = Math.min(row.clientWidth * 0.8, 640);
+                const direction = getComputedStyle(row).direction === 'rtl' ? -1 : 1;
+                row.scrollBy({ left: direction * Number(button.dataset.dir) * amount, behavior: 'smooth' });
+            });
+        });
+    </script>
+@endpush

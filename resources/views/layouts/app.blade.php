@@ -16,72 +16,97 @@
 <body class="min-h-screen bg-gray-50 text-ink antialiased">
 
     {{-- الشريط العلوي --}}
-    <header class="sticky top-0 z-40 border-b border-gray-100 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
-            <button type="button" data-menu-toggle aria-label="القائمة"
-                    class="grid size-9 shrink-0 place-items-center rounded-xl text-gray-600 transition hover:bg-gray-50 hover:text-primary">
-                <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-                </svg>
-            </button>
+    <header class="navbar">
+        <div class="nav-inner">
+            <div class="nav-start">
+                <button type="button" data-menu-toggle class="menu-btn" aria-label="القائمة">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                    </svg>
+                </button>
 
-            <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="flex shrink-0 items-center gap-2">
-                <span class="grid size-9 place-items-center overflow-hidden rounded-full bg-primary text-sm font-extrabold text-white">
-                    @if (auth()->check() && auth()->user()->avatar)
-                        <img src="{{ Storage::disk('public')->url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="size-full object-cover">
-                    @else
-                        س
-                    @endif
-                </span>
-                <span class="hidden text-lg font-extrabold text-ink sm:block">سوق غزة</span>
-            </a>
+                <div class="brand">
+                    <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="brand-mark" aria-label="حسابي">
+                        @if (auth()->check() && auth()->user()->avatar)
+                            <img src="{{ Storage::disk('public')->url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
+                        @elseif (auth()->check())
+                            {{ mb_substr(auth()->user()->name, 0, 1) }}
+                        @else
+                            س
+                        @endif
+                    </a>
+                    <a href="{{ route('home') }}" class="brand-text">سوق غزة</a>
+                </div>
+            </div>
 
-            <form action="{{ route('home') }}" method="GET" class="relative flex-1">
-                <input type="search" name="q" value="{{ request('q') }}"
-                       placeholder="ابحث عن منتج أو متجر…"
-                       class="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pe-10 ps-4 text-sm outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/15">
-                <svg class="pointer-events-none absolute inset-y-0 end-3 my-auto size-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"/>
+            <form action="{{ route('home') }}" method="GET" class="search-box">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
                 </svg>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث عن منتج، متجر أو تصنيف...">
+                <button type="submit" aria-label="بحث">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>
+                    </svg>
+                </button>
             </form>
 
-            <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="relative grid size-10 shrink-0 place-items-center rounded-xl border border-gray-200 text-gray-600 transition hover:border-primary hover:text-primary">
-                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
-                </svg>
+            <div class="nav-actions">
                 @auth
-                    @php
-                        $cartCount = auth()->user()->cart?->items()->sum('quantity') ?? 0;
-                    @endphp
-                    @if ($cartCount > 0)
-                        <span class="absolute -end-1 -top-1 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{{ $cartCount }}</span>
-                    @endif
-                @endauth
-            </a>
-
-            @auth
-                <div class="flex shrink-0 items-center gap-2">
-                    <a href="{{ \App\Support\RoleHome::url(auth()->user()) }}"
-                       class="hidden rounded-xl bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/15 sm:block">
-                        حسابي
+                    <a href="{{ route('favorites.index') }}" class="nav-action">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z"/>
+                        </svg>
+                        <span>المفضلة</span>
                     </a>
-                    <form method="POST" action="{{ route('logout') }}">
+                @else
+                    <a href="{{ route('login') }}" class="nav-action">
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>
+                        </svg>
+                        <span>تسجيل الدخول</span>
+                    </a>
+                @endauth
+
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
-                        <button type="submit" class="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-600 transition hover:border-red-200 hover:text-red-600">
-                            خروج
+                        <button type="submit" class="nav-action">
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/>
+                            </svg>
+                            <span>خروج</span>
                         </button>
                     </form>
-                </div>
-            @else
-                <div class="flex shrink-0 items-center gap-2">
-                    <a href="{{ route('register') }}" class="hidden rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-600 transition hover:border-primary hover:text-primary sm:block">
-                        حساب جديد
-                    </a>
-                    <a href="{{ route('login') }}" class="shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600">
-                        دخول
-                    </a>
-                </div>
-            @endauth
+                @endauth
+
+                <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="nav-action cart-action">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/>
+                    </svg>
+                    <span>السلة</span>
+                    @auth
+                        @php
+                            $cartCount = auth()->user()->cart?->items()->sum('quantity') ?? 0;
+                        @endphp
+                        @if ($cartCount > 0)
+                            <b>{{ $cartCount }}</b>
+                        @endif
+                    @endauth
+                </a>
+            </div>
+
+            <form action="{{ route('home') }}" method="GET" class="search-box mobile-search">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>
+                </svg>
+                <input type="search" name="q" value="{{ request('q') }}" placeholder="ابحث في سوق غزة...">
+                <button type="submit" aria-label="بحث">
+                    <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>
+                    </svg>
+                </button>
+            </form>
         </div>
     </header>
 
@@ -337,35 +362,156 @@
     </dialog>
 
     {{-- شريط سفلي للموبايل --}}
-    <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-white/95 backdrop-blur lg:hidden">
-        <div class="mx-auto grid max-w-lg grid-cols-4">
-            <a href="{{ route('home') }}" class="flex flex-col items-center gap-1 py-2.5 text-primary">
-                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955a1.125 1.125 0 0 1 1.591 0L21.75 12M4.5 9.75v10.5a.75.75 0 0 0 .75.75h4.5v-6h4.5v6h4.5a.75.75 0 0 0 .75-.75V9.75"/></svg>
-                <span class="text-[11px] font-medium">الرئيسية</span>
-            </a>
-            <a href="{{ route('stores.index') }}" class="flex flex-col items-center gap-1 py-2.5 text-gray-500">
-                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"/></svg>
-                <span class="text-[11px] font-medium">المتاجر</span>
-            </a>
-            <a href="{{ auth()->check() ? route('cart.index') : route('login') }}"
-               class="relative flex flex-col items-center gap-1 py-2.5 {{ auth()->check() ? 'text-gray-500' : 'text-gray-500' }}">
-                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272"/></svg>
-                <span class="text-[11px] font-medium">السلة</span>
-                @auth
-                    @php
-                        $bottomCartCount = auth()->user()->cart?->items()->sum('quantity') ?? 0;
-                    @endphp
-                    @if ($bottomCartCount > 0)
-                        <span class="absolute -top-0.5 grid size-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-white">{{ $bottomCartCount }}</span>
-                    @endif
-                @endauth
-            </a>
-            <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="flex flex-col items-center gap-1 py-2.5 text-gray-500">
-                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
-                <span class="text-[11px] font-medium">حسابي</span>
-            </a>
-        </div>
+    <nav class="mobile-nav" aria-label="التنقل الرئيسي">
+        <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="m3 11 9-8 9 8"/><path d="M5 10v11h14V10M9 21v-6h6v6"/></svg>
+            <span>الرئيسية</span>
+        </a>
+        <a href="{{ route('stores.index') }}" class="{{ request()->routeIs('stores.*') ? 'active' : '' }}">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 10v11h16V10M3 4h18l-2 6H5L3 4Z"/><path d="M8 21v-6h8v6"/></svg>
+            <span>المتاجر</span>
+        </a>
+        <a href="{{ auth()->check() ? route('cart.index') : route('login') }}" class="{{ request()->routeIs('cart.*') ? 'active' : '' }}">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+            <span>السلة</span>
+        </a>
+        <a href="{{ auth()->check() ? route('favorites.index') : route('login') }}" class="{{ request()->routeIs('favorites.*') ? 'active' : '' }}">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+            <span>المفضلة</span>
+        </a>
+        <a href="{{ auth()->check() ? route('profile.show') : route('login') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
+            <span>حسابي</span>
+        </a>
     </nav>
+
+    {{-- تنبيه صغير (إضافة للسلة بدون إعادة تحميل) --}}
+    <div id="mini-toast" style="position:fixed;z-index:90;bottom:26px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:.25s;background:#043b2d;color:#fff;padding:11px 18px;border-radius:13px;font-size:12px;font-weight:700;box-shadow:0 12px 30px rgba(4,59,45,.25);max-width:90vw;text-align:center"></div>
+
+    <script>
+        (function () {
+            const token = document.querySelector('meta[name="csrf-token"]')?.content;
+            const toastEl = document.getElementById('mini-toast');
+            let toastTimer = null;
+
+            function showToast(message, isError) {
+                if (!toastEl || !message) return;
+                toastEl.textContent = message;
+                toastEl.style.background = isError ? '#b3261e' : '#043b2d';
+                toastEl.style.opacity = '1';
+                toastEl.style.transform = 'translate(-50%, 0)';
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toastEl.style.opacity = '0';
+                    toastEl.style.transform = 'translate(-50%, 20px)';
+                }, 2600);
+            }
+
+            function updateCartBadge(count) {
+                const cartLink = document.querySelector('.nav-action.cart-action');
+                if (!cartLink) return;
+                let badge = cartLink.querySelector('b');
+
+                if (count > 0) {
+                    if (!badge) {
+                        badge = document.createElement('b');
+                        cartLink.appendChild(badge);
+                    }
+                    badge.textContent = count;
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+
+            // إضافة للسلة عبر AJAX: بلا إعادة تحميل وبلا فقدان مكان التمرير
+            document.addEventListener('submit', function (event) {
+                const form = event.target.closest('form[action*="cart/add"]');
+                if (!form || form.dataset.noAjax) return;
+
+                event.preventDefault();
+
+                const button = form.querySelector('button[type="submit"]');
+                if (button) button.disabled = true;
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: new FormData(form),
+                })
+                    .then(async (response) => ({ status: response.status, data: await response.json().catch(() => ({})) }))
+                    .then(({ status, data }) => {
+                        if (status >= 200 && status < 300 && data.ok) {
+                            updateCartBadge(data.count || 0);
+                            showToast(data.message || 'أُضيف إلى السلة');
+
+                            if (button) {
+                                button.classList.add('added');
+                                setTimeout(() => button.classList.remove('added'), 1400);
+                            }
+                        } else {
+                            showToast(data.message || 'تعذّرت الإضافة', true);
+                        }
+                    })
+                    .catch(() => {
+                        // في حال فشل الشبكة: أرسل النموذج بالطريقة التقليدية
+                        form.dataset.noAjax = '1';
+                        form.submit();
+                    })
+                    .finally(() => {
+                        if (button) button.disabled = false;
+                    });
+            }, true);
+
+            // إضافة/إزالة منتج من المفضلة بدون إعادة تحميل
+            document.addEventListener('submit', function (event) {
+                const form = event.target.closest('form[action*="/favorites/"]');
+                if (!form || form.dataset.noAjax || form.hasAttribute('data-favorite-form')) return;
+
+                event.preventDefault();
+
+                const button = form.querySelector('button');
+                if (button) button.disabled = true;
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: new FormData(form),
+                })
+                    .then(async (response) => ({ status: response.status, data: await response.json().catch(() => ({})) }))
+                    .then(({ status, data }) => {
+                        if (status >= 200 && status < 300 && data.ok && button) {
+                            button.classList.toggle('is-fav', data.favorited);
+                            const svg = button.querySelector('svg');
+                            if (svg) svg.setAttribute('fill', data.favorited ? 'currentColor' : 'none');
+
+                            button.classList.remove('heart-pop');
+                            void button.offsetWidth;
+                            button.classList.add('heart-pop');
+                            setTimeout(() => button.classList.remove('heart-pop'), 450);
+
+                            showToast(data.message || (data.favorited ? 'أُضيف إلى المفضلة' : 'أُزيل من المفضلة'));
+                        } else {
+                            showToast(data.message || 'تعذّر تحديث المفضلة', true);
+                        }
+                    })
+                    .catch(() => {
+                        form.dataset.noAjax = '1';
+                        form.submit();
+                    })
+                    .finally(() => {
+                        if (button) button.disabled = false;
+                    });
+            }, true);
+        })();
+    </script>
 
     @stack('scripts')
 </body>

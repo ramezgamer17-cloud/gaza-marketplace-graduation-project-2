@@ -98,4 +98,33 @@ class VendorProfile extends Model
     {
         return $query->where('is_active', true);
     }
+
+    public function favorites(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StoreFavorite::class);
+    }
+
+    public function ratings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(StoreRating::class);
+    }
+
+    public function isFavoritedBy(?int $userId): bool
+    {
+        if (! $userId) {
+            return false;
+        }
+
+        return $this->favorites()->where('user_id', $userId)->exists();
+    }
+
+    public function ratingAverage(): float
+    {
+        return round((float) $this->ratings()->avg('rating'), 1);
+    }
+
+    public function ratingCount(): int
+    {
+        return $this->ratings()->count();
+    }
 }

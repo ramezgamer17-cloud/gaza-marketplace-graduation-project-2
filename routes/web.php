@@ -60,4 +60,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{product}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    Route::post('/store/{vendorProfile}/favorite', [\App\Http\Controllers\StoreEngagementController::class, 'toggleFavorite'])->name('stores.favorite');
+    Route::post('/store/{vendorProfile}/rate', [\App\Http\Controllers\StoreEngagementController::class, 'rate'])->name('stores.rate');
 });
