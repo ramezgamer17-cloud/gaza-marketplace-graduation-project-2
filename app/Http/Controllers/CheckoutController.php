@@ -125,6 +125,17 @@ class CheckoutController extends Controller
             return back()->withInput()->with('error', $exception->getMessage());
         }
 
+        // حفظ أرقام الفواتير لمتابعة الدفع واحدة تلو الأخرى
+        $request->session()->put('checkout_orders', $orders->pluck('id')->all());
+
+        $firstUnpaid = $orders->first(fn ($order) => $order->payment_method === 'jawwal_pay' && $order->payment_status !== 'paid');
+
+        if ($firstUnpaid) {
+            return redirect()
+                ->route('payment.show', $firstUnpaid)
+                ->with('status', 'تم إنشاء '.$orders->count().' فاتورة. أكمل الدفع الآن.');
+        }
+
         return redirect()
             ->route('orders.index')
             ->with('status', 'تم إنشاء '.$orders->count().' فاتورة بنجاح. تابع طلباتك من هنا.');

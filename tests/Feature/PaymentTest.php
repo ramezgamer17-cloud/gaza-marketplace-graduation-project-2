@@ -58,7 +58,7 @@ class PaymentTest extends TestCase
         // الرمز الصحيح
         $this->actingAs($customer)
             ->post(route('payment.verify.submit', $order), ['code' => $order->payment_code])
-            ->assertRedirect(route('orders.show', $order));
+            ->assertRedirect(route('orders.index'));
 
         $order->refresh();
         $this->assertSame('paid', $order->payment_status);

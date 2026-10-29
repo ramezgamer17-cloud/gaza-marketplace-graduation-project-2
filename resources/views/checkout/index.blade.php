@@ -107,12 +107,8 @@
                                     <span class="truncate">{{ $item->product->name }} × {{ $item->quantity }}</span>
                                     <span class="flex shrink-0 items-center gap-2">
                                         <span class="font-semibold">{{ number_format($item->line_total, 2) }}</span>
-                                        <form method="POST" action="{{ route('cart.remove', $item) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" title="إزالة من السلة"
-                                                    class="grid size-5 place-items-center rounded-full text-red-400 transition hover:bg-red-50 hover:text-red-600">×</button>
-                                        </form>
+                                        <button type="button" data-remove-item="{{ route('cart.remove.post', $item) }}" title="إزالة من السلة"
+                                                class="grid size-5 place-items-center rounded-full text-red-400 transition hover:bg-red-50 hover:text-red-600">×</button>
                                     </span>
                                 </li>
                             @endforeach
@@ -231,6 +227,32 @@
                     el.addEventListener('input', persist);
                     el.addEventListener('change', persist);
                 }
+            });
+
+            // حذف منتج من الملخص بدون كسر نموذج الدفع (لا نماذج متداخلة)
+            document.querySelectorAll('[data-remove-item]').forEach((button) => {
+                button.addEventListener('click', async () => {
+                    const url = button.getAttribute('data-remove-item');
+                    button.disabled = true;
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'text/html',
+                            },
+                        });
+
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            button.disabled = false;
+                        }
+                    } catch (e) {
+                        button.disabled = false;
+                    }
+                });
             });
         });
     </script>

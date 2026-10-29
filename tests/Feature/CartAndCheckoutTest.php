@@ -142,7 +142,7 @@ class CartAndCheckoutTest extends TestCase
 
         $this->actingAs($customer)
             ->post(route('checkout.store'), $this->checkoutPayload())
-            ->assertRedirect(route('orders.index'));
+            ->assertRedirectContains('/pay');
 
         $this->assertSame(2, Order::count());
 
@@ -304,6 +304,22 @@ class CartAndCheckoutTest extends TestCase
             ->assertSuccessful()
             ->assertSee('رجوع إلى السلة')
             ->assertSee(route('cart.index'), false);
+    }
+
+    public function test_item_can_be_removed_via_post_remove_route(): void
+    {
+        $customer = User::factory()->create();
+        [, , $product] = $this->makeVendor('متجر', 10);
+
+        $this->actingAs($customer)->post(route('cart.add', $product));
+
+        $item = \App\Models\CartItem::firstOrFail();
+
+        $this->actingAs($customer)
+            ->post(route('cart.remove.post', $item))
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('cart_items', 0);
     }
 
     public function test_empty_cart_redirects_checkout(): void
