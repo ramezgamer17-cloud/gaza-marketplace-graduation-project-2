@@ -28,3 +28,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Google OAuth / credentials files
+client_secret_*.json
+*credentials*.json
+service-account*.json
