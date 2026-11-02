@@ -260,3 +260,40 @@
 .heart-button.is-fav svg { fill: currentColor; }
 .heart-button.heart-pop { animation: heartPop .4s ease; }
 @keyframes heartPop { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
+
+/* ---------- سلة الشراء: تخطيط متجاوب ---------- */
+body { overflow-x: clip; }
+
+.cart-store-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #eef3f0; }
+.cart-item { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto; grid-template-areas: "thumb info qty total"; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #f6f9f7; }
+.cart-thumb { grid-area: thumb; width: 64px; height: 64px; display: grid; place-items: center; overflow: hidden; border-radius: 16px; background: #eef6f2; color: rgba(6,95,70,.4); font-size: 18px; font-weight: 800; }
+.cart-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.cart-info { grid-area: info; min-width: 0; }
+.cart-name { margin: 0; font-size: 13px; font-weight: 800; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-unit { margin: 2px 0 0; font-size: 11px; color: var(--muted); }
+.cart-remove { margin-top: 3px; border: 0; background: none; padding: 0; color: #e08a8a; font-size: 11px; font-weight: 700; cursor: pointer; }
+.cart-remove:hover { color: #c94242; }
+.cart-qty { grid-area: qty; display: flex; align-items: center; gap: 6px; }
+.cart-line-total { grid-area: total; width: 78px; text-align: end; font-size: 13px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+
+@media (max-width: 640px) {
+    .cart-store-head { padding: 12px 14px; }
+    .cart-store-head > span:last-child { font-size: 12px; }
+    .cart-item {
+        grid-template-columns: 56px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "thumb info total"
+            "thumb qty qty";
+        row-gap: 8px;
+        column-gap: 10px;
+        padding: 12px 14px;
+    }
+    .cart-thumb { width: 56px; height: 56px; border-radius: 14px; }
+    .cart-name { font-size: 12.5px; }
+    .cart-line-total { width: auto; font-size: 12.5px; }
+    .cart-qty { gap: 8px; }
+    .qty-btn { width: 30px; height: 30px; }
+    .page-head { flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .page-head h1 { font-size: 22px; }
+    .page-head .btn-ghost { min-height: 34px; padding: 0 12px; font-size: 11px; }
+}

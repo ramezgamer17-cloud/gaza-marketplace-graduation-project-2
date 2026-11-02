@@ -33,7 +33,7 @@
             <div class="space-y-4 lg:col-span-2">
                 @foreach ($groups as $group)
                     <section class="panel overflow-hidden" data-store="{{ $group->vendor->id }}">
-                        <header class="flex items-center justify-between gap-3 px-4 py-3.5" style="border-bottom:1px solid #eef3f0">
+                        <header class="cart-store-head" style="border-bottom:1px solid #eef3f0">
                             <a href="{{ route('stores.show', $group->vendor->vendorProfile) }}" class="flex items-center gap-2.5 no-underline">
                                 <span class="store-logo green" style="flex:0 0 40px;height:40px;border-radius:13px;font-size:16px"
                                       @if ($group->vendor->vendorProfile?->logo) data-has-logo @endif>
@@ -54,40 +54,40 @@
 
                         <ul>
                             @foreach ($group->items as $item)
-                                <li class="flex items-center gap-3 px-4 py-3" style="border-top:1px solid #f6f9f7"
+                                <li class="cart-item"
                                     data-item="{{ $item->id }}"
                                     data-max="{{ (int) $item->product->stock }}"
                                     data-name="{{ $item->product->name }}"
                                     data-update-url="{{ route('cart.update', $item) }}"
                                     data-remove-url="{{ route('cart.remove', $item) }}">
-                                    <span class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-primary-50 text-lg font-extrabold text-primary/40">
+                                    <span class="cart-thumb">
                                         @if ($item->product->thumbnail)
-                                            <img src="{{ Storage::disk('public')->url($item->product->thumbnail) }}" alt="{{ $item->product->name }}" class="size-full object-cover">
+                                            <img src="{{ Storage::disk('public')->url($item->product->thumbnail) }}" alt="{{ $item->product->name }}">
                                         @else
                                             {{ mb_substr($item->product->name, 0, 1) }}
                                         @endif
                                     </span>
 
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-bold text-ink">{{ $item->product->name }}</p>
-                                        <p class="mt-0.5 text-[11px] text-gray-500">{{ number_format((float) $item->product->price, 2) }} شيكل للوحدة</p>
-                                        <button type="button" class="mt-1 text-[11px] font-semibold text-red-400 hover:text-red-600" data-cart-remove>إزالة</button>
+                                    <div class="cart-info">
+                                        <p class="cart-name">{{ $item->product->name }}</p>
+                                        <p class="cart-unit">{{ number_format((float) $item->product->price, 2) }} شيكل للوحدة</p>
+                                        <button type="button" class="cart-remove" data-cart-remove>إزالة</button>
                                     </div>
 
-                                    <div class="flex items-center gap-1.5">
+                                    <div class="cart-qty">
                                         <button type="button" class="qty-btn" data-cart-step="-1" aria-label="إنقاص">−</button>
                                         <span class="qty-value" data-qty>{{ $item->quantity }}</span>
                                         <button type="button" class="qty-btn" data-cart-step="1" aria-label="زيادة">+</button>
                                     </div>
 
-                                    <p class="w-20 text-end text-sm font-extrabold text-ink" data-line-total>{{ number_format($item->line_total, 2) }}</p>
+                                    <p class="cart-line-total" data-line-total>{{ number_format($item->line_total, 2) }}</p>
                                 </li>
                             @endforeach
                         </ul>
 
                         <footer class="flex items-center justify-between px-4 py-2.5 text-[11px] text-gray-500" style="border-top:1px solid #f6f9f7">
                             <span>تُحسب حسب منطقتك عند إتمام الطلب</span>
-                            <span>إجمالي المتجر: <strong class="text-ink" data-store-subtotal>{{ number_format($group->subtotal, 2) }} شيكل</strong></span>
+                            <span>إجمالي المتجر: <strong class="text-ink" data-store-subtotal>{{ number_format($group->subtotal, 2) }}&nbsp;شيكل</strong></span>
                         </footer>
                     </section>
                 @endforeach
