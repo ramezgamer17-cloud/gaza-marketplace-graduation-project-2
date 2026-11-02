@@ -26,4 +26,13 @@ class OrderController extends Controller
 
         return view('orders.invoice', compact('order'));
     }
+
+    public function tracking(Order $order): View
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        $order->load(['items', 'vendor.vendorProfile', 'deliveryUser', 'deliveryCompany', 'deliveryZone']);
+
+        return view('orders.tracking', compact('order'));
+    }
 }

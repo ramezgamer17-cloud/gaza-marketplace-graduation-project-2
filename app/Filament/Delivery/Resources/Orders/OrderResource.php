@@ -72,6 +72,8 @@ class OrderResource extends Resource
                     ->options([
                         Order::STATUS_CONFIRMED => 'مؤكد',
                         Order::STATUS_PREPARING => 'قيد التحضير',
+                    Order::STATUS_READY => 'تم التجهيز',
+                        Order::STATUS_READY => 'تم التجهيز',
                         Order::STATUS_SHIPPED => 'في الطريق',
                         Order::STATUS_DELIVERED => 'تم التوصيل',
                         Order::STATUS_CANCELLED => 'تعذّر التوصيل',

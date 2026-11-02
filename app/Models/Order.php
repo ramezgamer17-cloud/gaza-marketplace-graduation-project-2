@@ -19,6 +19,9 @@ class Order extends Model
 
     public const STATUS_PREPARING = 'preparing';
 
+    /** الطلب جاهز للتوصيل بعد تجهيزه من البائع. */
+    public const STATUS_READY = 'ready';
+
     public const STATUS_SHIPPED = 'shipped';
 
     public const STATUS_DELIVERED = 'delivered';
@@ -31,6 +34,7 @@ class Order extends Model
         'vendor_id',
         'delivery_user_id',
         'delivery_company_id',
+        'delivery_zone_id',
         'status',
         'payment_method',
         'payment_status',
@@ -64,6 +68,20 @@ class Order extends Model
         // رقم مؤقت قصير يمنع التعارض، ثم يتحول إلى رقم تسلسلي دائم بعد الحفظ
         static::creating(function (Order $order) {
             $order->order_number ??= 'TMP-'.Str::lower(Str::random(12));
+        });
+
+        static::updated(function (Order $order) {
+            if ($order->wasChanged('status') && $order->customer) {
+                $order->customer->notify(new \App\Notifications\OrderStatusChanged($order));
+            }
+
+            if ($order->wasChanged('delivery_user_id') && $order->delivery_user_id) {
+                $driver = $order->deliveryUser;
+
+                if ($driver) {
+                    $driver->notify(new \App\Notifications\OrderAssignedToDriver($order));
+                }
+            }
         });
 
         static::created(function (Order $order) {
@@ -134,6 +152,7 @@ class Order extends Model
             self::STATUS_PENDING => 'قيد الانتظار',
             self::STATUS_CONFIRMED => 'مؤكد',
             self::STATUS_PREPARING => 'قيد التحضير',
+            self::STATUS_READY => 'تم التجهيز',
             self::STATUS_SHIPPED => 'في الطريق',
             self::STATUS_DELIVERED => 'تم التوصيل',
             self::STATUS_CANCELLED => 'ملغي',

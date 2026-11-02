@@ -15,6 +15,7 @@
                         ادفع الآن — جوال بي
                     </a>
                 @endif
+                <a href="{{ route('orders.tracking', $order) }}" class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white hover:bg-primary-600">تتبّع التوصيل</a>
                 <button onclick="window.print()" class="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-primary hover:text-primary">
                     طباعة الفاتورة
                 </button>

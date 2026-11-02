@@ -192,7 +192,7 @@ class CartAndCheckoutTest extends TestCase
         $this->assertSame(2, Order::count());
 
         // كل متجر في الشمال، والزبون في الشمال → 5 لكل متجر
-        $this->assertDatabaseHas('orders', ['vendor_id' => $storeA->user_id, 'delivery_fee' => 5, 'total' => 35]);
+        $this->assertDatabaseHas('orders', ['vendor_id' => $storeA->user_id, 'delivery_fee' => 5, 'total' => 35, 'delivery_zone_id' => $this->north->id]);
         $this->assertDatabaseHas('orders', ['vendor_id' => $storeB->user_id, 'delivery_fee' => 5, 'total' => 24.5]);
         $this->assertDatabaseCount('cart_items', 0);
 

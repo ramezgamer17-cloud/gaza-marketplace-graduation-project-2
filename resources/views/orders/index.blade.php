@@ -32,8 +32,8 @@
                     ];
                 @endphp
 
-                <a href="{{ route('orders.show', $order) }}"
-                   class="panel flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-md no-underline">
+                <div class="panel flex items-center gap-3 p-4 transition hover:-translate-y-0.5 hover:shadow-md">
+                    <a href="{{ route('orders.show', $order) }}" class="flex min-w-0 flex-1 items-center gap-3 no-underline">
                     <span class="store-logo green" style="flex:0 0 48px;height:48px;border-radius:15px;font-size:18px"
                           @if ($order->vendor->vendorProfile?->logo) style="background-image:url('{{ Storage::disk('public')->url($order->vendor->vendorProfile->logo) }}');background-size:cover;background-position:center" @endif>
                         @if ($order->vendor->vendorProfile?->logo)
@@ -54,7 +54,10 @@
                             {{ \App\Models\Order::statusLabels()[$order->status] ?? $order->status }}
                         </span>
                     </div>
-                </a>
+                    </a>
+
+                    <a href="{{ route('orders.tracking', $order) }}" class="order-track-link">تتبّع</a>
+                </div>
             @endforeach
         </div>
 

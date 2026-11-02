@@ -251,10 +251,11 @@ admin screens, notifications, and mobile layout guards.
 ## 📌 Roadmap / Remaining Work
 
 ### 🔴 High priority (complete the order lifecycle)
-- [ ] Vendor **"Mark as prepared"** action that notifies the delivery company
-- [ ] Driver assignment screen (manual by manager) + **notification to the driver**
-- [ ] Customer **order tracking timeline** (paid → preparing → on the way → delivered)
-- [ ] Status-change notifications for customer / vendor / driver (database + optional SMS)
+- [x] Vendor **"Mark as prepared"** action that notifies the delivery company
+- [x] Driver assignment screen (manual by manager) + **notification to the driver**
+- [x] Auto-assign each order to the delivery company matching the delivery zone`n- [x] Auto-assign a free driver in the same zone (company drivers first, then independent)
+- [x] Customer **order tracking timeline** (paid → preparing → on the way → delivered)
+- [x] Status-change notifications for the customer (tracking link included)`n- [ ] Status-change notifications for vendor / driver (remaining)
 
 ### 🟠 Medium priority
 - [ ] **Live search** (products & stores) with Livewire + debounce

@@ -88,8 +88,27 @@ class CheckoutService
         });
 
         $this->notifyAboutOrders($orders);
+        $this->assignDeliveryCompanies($orders);
 
         return $orders;
+    }
+
+    /**
+     * إسناد كل طلب لشركة التوصيل حسب منطقة التوصيل، وإشعار مدير الشركة.
+     *
+     * @param  \Illuminate\Support\Collection<int, Order>  $orders
+     */
+    protected function assignDeliveryCompanies($orders): void
+    {
+        $assignment = app(\App\Services\DeliveryAssignment::class);
+
+        foreach ($orders as $order) {
+            if (! $assignment->assignCompany($order)) {
+                continue;
+            }
+
+            $assignment->notifyCompanyManager($order->fresh(['deliveryCompany.manager']));
+        }
     }
 
     /**

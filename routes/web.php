@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/tracking', [OrderController::class, 'tracking'])->name('orders.tracking');
 
     Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/orders/{order}/pay', [PaymentController::class, 'sendCode'])->name('payment.send');

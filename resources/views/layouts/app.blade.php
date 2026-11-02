@@ -240,7 +240,7 @@
                         </a>
                     @endif
 
-                    @if ($menuDelivery?->is_active && $menuDelivery->type === 'manager')
+                    @if ($menuDelivery?->is_active && $menuDelivery->type === 'manager' && auth()->user()->hasRole('delivery_manager'))
                         @php
                             $companyPending = \App\Models\Order::where('delivery_company_id', $menuDelivery->company_id)->whereNull('delivery_user_id')->count();
                         @endphp
@@ -251,7 +251,7 @@
                                 <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-white">{{ $companyPending }}</span>
                             @endif
                         </a>
-                    @elseif ($menuDelivery?->is_active)
+                    @elseif ($menuDelivery?->is_active && auth()->user()->hasRole('delivery'))
                         @php
                             $driverActive = \App\Models\Order::where('delivery_user_id', auth()->id())->whereIn('status', ['confirmed', 'preparing', 'shipped'])->count();
                         @endphp

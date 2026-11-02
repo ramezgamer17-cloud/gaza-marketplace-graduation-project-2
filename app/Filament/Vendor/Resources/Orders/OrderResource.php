@@ -60,6 +60,7 @@ class OrderResource extends Resource
             Order::STATUS_PENDING => 'warning',
             Order::STATUS_CONFIRMED => 'info',
             Order::STATUS_PREPARING => 'info',
+        Order::STATUS_READY => 'success',
             Order::STATUS_SHIPPED => 'primary',
             Order::STATUS_DELIVERED => 'success',
             Order::STATUS_CANCELLED => 'danger',
@@ -76,6 +77,7 @@ class OrderResource extends Resource
                         Order::STATUS_PENDING => 'قيد الانتظار',
                         Order::STATUS_CONFIRMED => 'مؤكد',
                         Order::STATUS_PREPARING => 'قيد التحضير',
+                    Order::STATUS_READY => 'تم التجهيز',
                         Order::STATUS_SHIPPED => 'في الطريق',
                         Order::STATUS_DELIVERED => 'تم التوصيل',
                         Order::STATUS_CANCELLED => 'ملغي',
@@ -137,6 +139,43 @@ class OrderResource extends Resource
                     ->options(Order::statusLabels()),
             ])
             ->recordActions([
+                \Filament\Actions\Action::make('markReady')
+                    ->label('تم تجهيز الطلب')
+                    ->icon('heroicon-m-check-badge')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('تجهيز الطلب')
+                    ->modalDescription('سيتم تحويل الطلب إلى «تم التجهيز» ومحاولة إسناده تلقائيًا لمندوب متفرّغ في نفس المنطقة.')
+                    ->visible(fn (Order $record) => in_array($record->status, [
+                        Order::STATUS_PENDING,
+                        Order::STATUS_CONFIRMED,
+                        Order::STATUS_PREPARING,
+                    ], true))
+                    ->action(function (Order $record) {
+                        $record->update(['status' => Order::STATUS_READY]);
+
+                        $assignment = app(\App\Services\DeliveryAssignment::class);
+                        $assignment->assignCompany($record->fresh());
+                        $assignment->notifyCompanyManager($record->fresh(['deliveryCompany.manager']));
+                        $driver = $assignment->assignDriver($record->fresh(['deliveryCompany']));
+
+                        if ($driver) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('تم تجهيز الطلب')
+                                ->body('أُسند الطلب إلى المندوب: '.$driver->name)
+                                ->success()
+                                ->send();
+
+                            return;
+                        }
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('تم تجهيز الطلب')
+                            ->body('لا يتوفر مندوبون متفرغون في منطقتك حاليًا. سيبقى الطلب بانتظار توفر مندوب.')
+                            ->warning()
+                            ->send();
+                    }),
+
                 EditAction::make()->label('إدارة'),
             ]);
     }
