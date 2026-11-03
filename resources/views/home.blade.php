@@ -43,16 +43,40 @@
 
             @if ($stores->isNotEmpty())
                 <div class="hero-stat">
-                    <b>{{ $stores->count() + $categories->sum('products_count') }}</b>
+                    <b data-count="{{ $stores->count() + $categories->sum('products_count') }}">{{ $stores->count() + $categories->sum('products_count') }}</b>
                     <span>متجر ومنتج<br>في مكان واحد</span>
                 </div>
             @endif
         </section>
     </div>
 
+    {{-- شريط الثقة --}}
+    <div class="shell" style="position:relative;z-index:6;margin-top:-26px">
+        <div class="trust-strip reveal">
+            <div class="trust-item">
+                <span class="trust-ico">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 6h11v11H3zM14 10h4l3 4v3h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>
+                </span>
+                <div><b>توصيل سريع</b><span>من المتجر إلى بابك</span></div>
+            </div>
+            <div class="trust-item">
+                <span class="trust-ico">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+                </span>
+                <div><b>دفع آمن</b><span>عبر جوال بي</span></div>
+            </div>
+            <div class="trust-item">
+                <span class="trust-ico">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M4 10v11h16V10M3 4h18l-2 6H5L3 4Z"/><path d="M8 21v-6h8v6"/></svg>
+                </span>
+                <div><b>متاجر موثوقة</b><span>أصحاب متاجر حقيقيون</span></div>
+            </div>
+        </div>
+    </div>
+
     {{-- التصنيفات --}}
     @if ($categories->isNotEmpty())
-        <section class="categories">
+        <section class="categories reveal">
             <div class="simple-heading">
                 <div>
                     <span class="eyebrow">تسوّق حسب الفئة</span>
@@ -66,7 +90,7 @@
                 </a>
             </div>
 
-            <div class="category-row">
+            <div class="category-row" data-stagger>
                 @php($tones = ['mint', 'blue', 'ice', 'lilac', 'sand'])
                 @foreach ($categories->take(5) as $i => $category)
                     <a href="{{ route('stores.index') }}" class="category-card">
@@ -83,7 +107,7 @@
 
     {{-- المتاجر --}}
     @if ($stores->isNotEmpty())
-        <section id="stores" class="stores-section">
+        <section id="stores" class="stores-section reveal">
             <div class="shell">
                 <div class="section-heading">
                     <div>
@@ -100,7 +124,7 @@
                     </div>
                 </div>
 
-                <div class="store-row snap-row" id="stores-row">
+                <div class="store-row snap-row" id="stores-row" data-stagger>
                     @php($logoClasses = ['green', 'navy', 'orange', 'teal'])
                     @foreach ($stores as $i => $store)
                         <a href="{{ route('stores.show', $store) }}" class="store-card">
@@ -139,7 +163,7 @@
 
     {{-- العروض --}}
     @if ($featuredProducts->isNotEmpty())
-        <section class="deals-section">
+        <section class="deals-section reveal">
             <div class="simple-heading">
                 <div>
                     <span class="eyebrow">عروض اليوم</span>
@@ -151,7 +175,7 @@
                 </a>
             </div>
 
-            <div class="product-row snap-row">
+            <div class="product-row snap-row" data-stagger>
                 @foreach ($featuredProducts as $product)
                     @include('partials.product-card', ['product' => $product, 'large' => $loop->index < 3])
                 @endforeach
@@ -161,7 +185,7 @@
 
     {{-- مختارات المتاجر --}}
     @if ($storeSections->isNotEmpty())
-        <section id="picks" class="picks-section">
+        <section id="picks" class="picks-section reveal">
             <div class="shell">
                 <div class="section-heading">
                     <div>
@@ -172,7 +196,7 @@
                 </div>
 
                 @foreach ($storeSections as $store)
-                    <div class="store-strip"
+                    <a href="{{ route('stores.show', $store) }}" class="store-strip" aria-label="زيارة متجر {{ $store->store_name }}"
                          @if ($store->cover) style="background-image:linear-gradient(100deg, rgba(4,59,45,.94) 0%, rgba(6,95,70,.82) 45%, rgba(15,52,90,.72) 100%), url('{{ Storage::disk('public')->url($store->cover) }}'); background-size:cover; background-position:center" @endif>
                         <span class="store-logo" style="flex:0 0 46px;height:46px;border-radius:999px;font-size:16px;border:2px solid rgba(255,255,255,.55)">
                             @if ($store->logo)
@@ -189,8 +213,8 @@
                             <h2>{{ $store->store_name }}</h2>
                         </div>
 
-                        <a href="{{ route('stores.show', $store) }}">زيارة المتجر</a>
-                    </div>
+                        <span class="strip-cta">زيارة المتجر ←</span>
+                    </a>
 
                     <div class="carousel-controls" style="margin:0 0 10px; justify-content:flex-start">
                         <button type="button" data-scroll="picks-row-{{ $store->id }}" data-dir="-1" aria-label="السابق">
@@ -201,7 +225,7 @@
                         </button>
                     </div>
 
-                    <div class="product-row snap-row picks-row" id="picks-row-{{ $store->id }}" style="margin-bottom:26px">
+                    <div class="product-row snap-row picks-row" data-stagger id="picks-row-{{ $store->id }}" style="margin-bottom:26px">
                         @foreach ($store->showcaseProducts as $product)
                             @include('partials.product-card', ['product' => $product])
                         @endforeach

@@ -21,14 +21,18 @@
     </div>
 
     @if ($groups->isEmpty())
-        <div class="panel" style="padding:48px 20px;text-align:center">
-            <span style="font-size:44px">🛒</span>
-            <p class="mt-3 text-sm font-bold text-ink">سلتك فارغة حاليًا</p>
-            <p class="mt-1 text-xs text-gray-500">ابدأ التسوق من متاجر غزة القريبة منك.</p>
-            <a href="{{ route('home') }}" class="btn-green" style="display:inline-flex;margin-top:18px">تصفّح المنتجات</a>
+        <div class="panel empty-state">
+            <span class="empty-ico">
+                <svg width="38" height="38" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                    <path d="M5 8h14l-1 13H6L5 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/>
+                </svg>
+            </span>
+            <h3>سلتك فارغة حاليًا</h3>
+            <p>ابدأ التسوق من متاجر غزة القريبة منك، وستجد كل ما تحتاجه في مكان واحد.</p>
+            <a href="{{ route('home') }}" class="btn-green" style="display:inline-flex;margin-top:14px">تصفّح المنتجات</a>
         </div>
     @else
-        <div class="grid gap-4 lg:grid-cols-3">
+        <div class="grid gap-4 lg:grid-cols-3 reveal">
             {{-- المتاجر --}}
             <div class="space-y-4 lg:col-span-2">
                 @foreach ($groups as $group)
@@ -112,6 +116,15 @@
                 <p class="mt-3 text-center text-[10px] text-gray-400">فاتورة مستقلة لكل متجر · دفع آمن عبر جوال بي</p>
                 <a href="{{ route('home') }}" class="mt-2 block text-center text-[11px] font-semibold text-gray-500 hover:text-primary">← متابعة التسوق</a>
             </aside>
+        </div>
+
+        {{-- شريط دفع سريع للجوال --}}
+        <div class="mobile-checkout-bar">
+            <span>
+                <small>الإجمالي</small>
+                <strong>{{ number_format($cart->grand_total, 2) }} شيكل</strong>
+            </span>
+            <a href="{{ route('checkout.index') }}">متابعة الدفع ←</a>
         </div>
     @endif
 

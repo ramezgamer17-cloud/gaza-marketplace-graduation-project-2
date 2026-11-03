@@ -48,7 +48,7 @@
 
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4" style="border-color:rgba(6,95,70,.1)">
                 {{-- تقييم المتجر --}}
-                <div class="store-rating">
+                <div class="store-rating" id="rate">
                     <div class="stars" data-stars data-average="{{ $ratingAverage }}">
                         @for ($i = 1; $i <= 5; $i++)
                             <form method="POST" action="{{ route('stores.rate', $vendorProfile) }}" data-rate-form>

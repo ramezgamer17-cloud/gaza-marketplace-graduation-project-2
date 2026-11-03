@@ -23,9 +23,10 @@
             <p class="text-sm font-semibold text-gray-600">لا توجد متاجر مطابقة.</p>
         </div>
     @else
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
             @foreach ($stores as $store)
-                <a href="{{ route('stores.show', $store) }}" class="store-tile">
+                <div class="store-tile">
+                    <a href="{{ route('stores.show', $store) }}" class="store-tile-hit" aria-label="زيارة {{ $store->store_name }}"></a>
                     <div class="store-tile-cover"
                          @if ($store->cover) style="background-image:url('{{ Storage::disk('public')->url($store->cover) }}')" @endif>
                     </div>
@@ -41,20 +42,45 @@
                             @endif
                         </div>
 
-                        <h2>{{ $store->store_name }}</h2>
-                        <p>{{ $store->description ?: 'متجر على سوق غزة' }}</p>
+                        @php
+                            $avg = (float) ($store->ratings_avg ?? 0);
+                            $count = (int) ($store->ratings_count ?? 0);
+                            $pct = $count > 0 ? max(0, min(100, ($avg / 5) * 100)) : 0;
+                        @endphp
 
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="store-chip">{{ $store->user?->products_count ?? 0 }} منتج</span>
-                            @if ($store->zone)
-                                <span class="store-chip gray">{{ $store->zone->name }}</span>
-                            @endif
-                            @if ($store->is_featured)
-                                <span class="store-chip gold">مميز</span>
-                            @endif
+                        <div class="store-tile-grid">
+                            <div>
+                                <h2>{{ $store->store_name }}</h2>
+                                <p>{{ $store->description ?: 'متجر على سوق غزة' }}</p>
+
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="store-chip">{{ $store->user?->products_count ?? 0 }} منتج</span>
+                                    @if ($store->zone)
+                                        <span class="store-chip gray">{{ $store->zone->name }}</span>
+                                    @endif
+                                    @if ($store->is_featured)
+                                        <span class="store-chip gold">مميز</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="store-rating-panel {{ $count === 0 ? 'is-empty' : '' }}">
+                                @if ($count > 0)
+                                    <span class="score">{{ number_format($avg, 1) }} <small>/ 5</small></span>
+                                    <span class="stars-wrap" aria-label="تقييم {{ number_format($avg, 1) }} من 5">
+                                        <span class="stars-bg">★★★★★</span>
+                                        <span class="stars-fill" style="width: {{ $pct }}%">★★★★★</span>
+                                    </span>
+                                    <span class="count">{{ $count }} تقييم</span>
+                                @else
+                                    <span class="score">غير مُقيَّم</span>
+                                    <span class="count">0 تقييم</span>
+                                @endif
+                                <a href="{{ route('stores.show', $store) }}#rate" class="rate-cta">قيّم المتجر</a>
+                            </div>
                         </div>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
 

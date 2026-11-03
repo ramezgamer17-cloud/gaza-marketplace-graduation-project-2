@@ -14,6 +14,8 @@ class StoreController extends Controller
         $stores = VendorProfile::query()
             ->active()
             ->with(['user' => fn ($query) => $query->withCount('products')])
+            ->withAvg('ratings as ratings_avg', 'rating')
+            ->withCount('ratings as ratings_count')
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%'.$request->string('q').'%';
 

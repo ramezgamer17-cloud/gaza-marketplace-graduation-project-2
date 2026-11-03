@@ -21,11 +21,16 @@
         </div>
 
         @if ($stores->isEmpty())
-            <div class="panel" style="padding:22px;text-align:center">
-                <p class="text-xs text-gray-500">لم تُضف أي متجر للمفضلة بعد.</p>
+            <div class="panel empty-state" style="padding:30px 18px">
+                <span class="empty-ico" style="width:64px;height:64px;border-radius:20px">
+                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path d="M4 10v11h16V10M3 4h18l-2 6H5L3 4Z"/><path d="M8 21v-6h8v6"/></svg>
+                </span>
+                <h3 style="font-size:13px">لا متاجر في المفضلة بعد</h3>
+                <p>اضغط على القلب في صفحة أي متجر ليظهر هنا.</p>
+                <a href="{{ route('stores.index') }}" class="btn-ghost" style="margin-top:10px">تصفّح المتاجر</a>
             </div>
         @else
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-stagger>
                 @foreach ($stores as $store)
                     <a href="{{ route('stores.show', $store) }}" class="store-tile">
                         <div class="store-tile-cover"
@@ -66,12 +71,16 @@
         </div>
 
         @if ($products->isEmpty())
-            <div class="panel" style="padding:40px 20px;text-align:center">
-                <p class="text-sm font-semibold text-gray-600">لا توجد منتجات في المفضلة بعد.</p>
-                <a href="{{ route('home') }}" class="btn-green" style="display:inline-flex;margin-top:16px">تصفّح المنتجات</a>
+            <div class="panel empty-state">
+                <span class="empty-ico">
+                    <svg width="34" height="34" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+                </span>
+                <h3>لا منتجات في المفضلة بعد</h3>
+                <p>أضف ما يعجبك ليصلك بسهولة لاحقًا.</p>
+                <a href="{{ route('home') }}" class="btn-green" style="display:inline-flex;margin-top:14px">تصفّح المنتجات</a>
             </div>
         @else
-            <div class="product-grid">
+            <div class="product-grid" data-stagger>
                 @foreach ($products as $product)
                     @include('partials.product-card', ['product' => $product])
                 @endforeach

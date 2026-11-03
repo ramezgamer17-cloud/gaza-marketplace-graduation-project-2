@@ -9,7 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -407,6 +407,32 @@
                 }, 2600);
             }
 
+            function flyToCart(from) {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                const cart = document.querySelector('.cart-action');
+                if (!cart || !from) return;
+
+                const a = from.getBoundingClientRect();
+                const b = cart.getBoundingClientRect();
+                const dot = document.createElement('span');
+                dot.style.cssText = 'position:fixed;z-index:95;width:14px;height:14px;border-radius:50%;background:#065f46;box-shadow:0 0 0 5px rgba(6,95,70,.16);pointer-events:none;transition:left .55s cubic-bezier(.22,1,.36,1),top .55s cubic-bezier(.22,1,.36,1),opacity .55s,transform .55s;'
+                    + 'left:' + (a.left + a.width / 2 - 7) + 'px;top:' + (a.top + a.height / 2 - 7) + 'px;';
+
+                document.body.appendChild(dot);
+                requestAnimationFrame(() => {
+                    dot.style.left = (b.left + b.width / 2 - 7) + 'px';
+                    dot.style.top = (b.top + b.height / 2 - 7) + 'px';
+                    dot.style.opacity = '0.15';
+                    dot.style.transform = 'scale(.4)';
+                });
+                setTimeout(() => dot.remove(), 650);
+
+                cart.classList.remove('cart-bump');
+                void cart.offsetWidth;
+                cart.classList.add('cart-bump');
+                setTimeout(() => cart.classList.remove('cart-bump'), 500);
+            }
+
             function updateCartBadge(count) {
                 const cartLink = document.querySelector('.nav-action.cart-action');
                 if (!cartLink) return;
@@ -447,6 +473,7 @@
                         if (status >= 200 && status < 300 && data.ok) {
                             updateCartBadge(data.count || 0);
                             showToast(data.message || 'أُضيف إلى السلة');
+                            flyToCart(button);
 
                             if (button) {
                                 button.classList.add('added');
@@ -513,6 +540,64 @@
         })();
     </script>
 
+
+    {{-- UI/UX: ظهور تدريجي، عدّاد أرقام، توهج البطاقات --}}
+    <script>
+        (function () {
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const main = document.querySelector('main');
+            if (main) main.classList.add('page-in');
+
+            const targets = Array.from(document.querySelectorAll('.reveal, [data-stagger]'));
+
+            if (reduceMotion) {
+                targets.forEach((el) => el.classList.add('is-visible'));
+            } else {
+                targets.forEach((el) => {
+                    if (el.hasAttribute('data-stagger')) {
+                        Array.from(el.children).forEach((child, index) => {
+                            child.style.transitionDelay = (index * 70) + 'ms';
+                        });
+                    }
+                });
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) return;
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' });
+
+                targets.forEach((el) => observer.observe(el));
+            }
+
+            // عدّاد تصاعدي للأرقام
+            document.querySelectorAll('[data-count]').forEach((el) => {
+                const target = parseInt(el.getAttribute('data-count'), 10);
+                if (!target || target < 1) { el.textContent = target || 0; return; }
+                if (reduceMotion) { el.textContent = target; return; }
+
+                let current = 0;
+                const step = Math.max(1, Math.round(target / 28));
+                const tick = () => {
+                    current = Math.min(target, current + step);
+                    el.textContent = current;
+                    if (current < target) requestAnimationFrame(tick);
+                };
+                requestAnimationFrame(tick);
+            });
+
+            // توهج يتبع المؤشر داخل كروت المنتجات
+            document.querySelectorAll('.product-card').forEach((card) => {
+                card.addEventListener('pointermove', (event) => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--mx', (event.clientX - rect.left) + 'px');
+                    card.style.setProperty('--my', (event.clientY - rect.top) + 'px');
+                }, { passive: true });
+            });
+        })();
+    </script>
     @stack('scripts')
 </body>
 </html>

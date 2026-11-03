@@ -43,13 +43,12 @@
             @else
                 <div class="mb-5 flex items-center justify-between gap-2">
                     <h2 class="text-sm font-extrabold text-ink">حالة الطلب</h2>
-                    <span class="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-primary">
-                        {{ \App\Models\Order::statusLabels()[$status] ?? $status }}
-                    </span>
+                    <span class="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-primary" data-status-label>{{ \App\Models\Order::statusLabels()[$status] ?? $status }}</span>
+                    <span class="tracking-live" title="تحديث مباشر"></span>
                 </div>
             @endif
 
-            <ol class="tracking-steps">
+            <ol class="tracking-steps" data-tracking="{{ route('orders.status', $order) }}" data-status="{{ $status }}">
                 @foreach ($steps as $key => $step)
                     @php
                         $index = $loop->index;
@@ -57,7 +56,7 @@
                         $active = $index === $currentIndex && ! $isCancelled;
                     @endphp
 
-                    <li class="tracking-step {{ $done ? 'is-done' : '' }} {{ $active ? 'is-active' : '' }}">
+                    <li class="tracking-step {{ $done ? 'is-done' : '' }} {{ $active ? 'is-active' : '' }}" data-step="{{ $index }}">
                         <span class="tracking-node">{{ $step['icon'] }}</span>
                         <div class="tracking-copy">
                             <p class="tracking-label">{{ $step['label'] }}</p>
@@ -72,7 +71,7 @@
 
             <div class="mt-6 rounded-xl bg-gray-50 p-4 text-[11px] text-gray-500">
                 <p>تاريخ إنشاء الطلب: <strong class="text-ink">{{ $order->created_at?->format('Y-m-d H:i') }}</strong></p>
-                <p class="mt-1">آخر تحديث: <strong class="text-ink">{{ $order->updated_at?->format('Y-m-d H:i') }}</strong></p>
+                <p class="mt-1">آخر تحديث: <strong class="text-ink" data-updated-at>{{ $order->updated_at?->format('Y-m-d H:i') }}</strong></p>
             </div>
         </section>
 
@@ -128,3 +127,78 @@
     </div>
 
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const tracker = document.querySelector('[data-tracking]');
+    if (!tracker) return;
+
+    const url = tracker.dataset.tracking;
+    let lastStatus = tracker.dataset.status;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function toast(message) {
+        const el = document.getElementById('mini-toast');
+        if (!el) return;
+        el.textContent = message;
+        el.style.background = '#043b2d';
+        el.style.opacity = '1';
+        el.style.transform = 'translate(-50%, 0)';
+        clearTimeout(window.__trackToast);
+        window.__trackToast = setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translate(-50%, 20px)';
+        }, 3200);
+    }
+
+    function render(data) {
+        document.querySelectorAll('[data-step]').forEach((step) => {
+            const index = Number(step.dataset.step);
+            step.classList.toggle('is-done', !data.cancelled && index <= data.index);
+            step.classList.toggle('is-active', !data.cancelled && index === data.index);
+        });
+
+        const badge = document.querySelector('[data-status-label]');
+        if (badge) badge.textContent = data.label;
+
+        const updated = document.querySelector('[data-updated-at]');
+        if (updated && data.updated_at) updated.textContent = data.updated_at;
+
+        if (!reduce) {
+            const active = document.querySelector('.tracking-step.is-active .tracking-node');
+            if (active) {
+                active.classList.remove('just-changed');
+                void active.offsetWidth;
+                active.classList.add('just-changed');
+            }
+        }
+    }
+
+    async function poll() {
+        try {
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (data.status !== lastStatus) {
+                lastStatus = data.status;
+                render(data);
+                toast('تم تحديث حالة الطلب: ' + data.label);
+
+                if (data.driver) {
+                    const block = document.querySelector('[data-driver-name]');
+                    if (block) block.textContent = data.driver;
+                }
+            } else {
+                render(data);
+            }
+        } catch (e) {
+            // تجاهل أخطاء الشبكة المؤقتة
+        }
+    }
+
+    setInterval(poll, 8000);
+})();
+</script>
+@endpush

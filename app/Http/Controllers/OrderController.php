@@ -35,4 +35,28 @@ class OrderController extends Controller
 
         return view('orders.tracking', compact('order'));
     }
+
+    /**
+     * حالة الطلب الحالية (تُستخدم للتحديث المباشر بدون إعادة تحميل).
+     */
+    public function status(Order $order): \Illuminate\Http\JsonResponse
+    {
+        abort_unless($order->user_id === auth()->id(), 403);
+
+        $order->load(['deliveryUser', 'deliveryCompany']);
+
+        $keys = ['pending', 'confirmed', 'preparing', 'ready', 'shipped', 'delivered'];
+        $index = array_search($order->status, $keys, true);
+
+        return response()->json([
+            'status' => $order->status,
+            'label' => Order::statusLabels()[$order->status] ?? $order->status,
+            'index' => $index === false ? 0 : $index,
+            'cancelled' => $order->status === Order::STATUS_CANCELLED,
+            'updated_at' => $order->updated_at?->format('Y-m-d H:i'),
+            'driver' => $order->deliveryUser?->name,
+            'driver_phone' => $order->deliveryUser?->phone,
+            'company' => $order->deliveryCompany?->name,
+        ]);
+    }
 }
